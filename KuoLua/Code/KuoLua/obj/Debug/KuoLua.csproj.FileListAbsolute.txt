@@ -1,6 +1,0 @@
-D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\KuoLua\Code\KuoLua\bin\Debug\KuoLua.dll
-D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\KuoLua\Code\KuoLua\bin\Debug\KuoLua.pdb
-D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\KuoLua\Code\KuoLua\obj\Debug\KuoLua.csprojAssemblyReference.cache
-D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\KuoLua\Code\KuoLua\obj\Debug\KuoLua.csproj.CoreCompileInputs.cache
-D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\KuoLua\Code\KuoLua\obj\Debug\KuoLua.dll
-D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\KuoLua\Code\KuoLua\obj\Debug\KuoLua.pdb
