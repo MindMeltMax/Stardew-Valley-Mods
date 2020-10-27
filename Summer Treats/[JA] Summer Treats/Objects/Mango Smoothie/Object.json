@@ -1,0 +1,11 @@
+{
+    "Name": "Mango Smoothie",
+    "Description": "Refreshing and healthy",
+    "Price": 250,
+    "Category": "ArtisanGoods",
+    "Edibility": 25,
+    "EdibleIsDrink": true,
+    "Recipe": null,
+    "EdibleBuffs": null,
+    "EnableWithMod": "ppja.moretrees"
+}

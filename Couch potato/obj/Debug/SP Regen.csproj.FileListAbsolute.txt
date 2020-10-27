@@ -1,0 +1,6 @@
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Couch potato\obj\Debug\SP Regen.csproj.CoreCompileInputs.cache
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Couch potato\bin\Debug\SP Regen.dll
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Couch potato\bin\Debug\SP Regen.pdb
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Couch potato\obj\Debug\SP Regen.dll
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Couch potato\obj\Debug\SP Regen.pdb
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Couch potato\obj\Debug\SP Regen.csprojAssemblyReference.cache

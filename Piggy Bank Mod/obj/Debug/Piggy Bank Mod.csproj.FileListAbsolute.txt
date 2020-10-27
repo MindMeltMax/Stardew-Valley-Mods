@@ -1,0 +1,6 @@
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Piggy Bank Mod\bin\Debug\Piggy Bank Mod.dll
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Piggy Bank Mod\bin\Debug\Piggy Bank Mod.pdb
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Piggy Bank Mod\obj\Debug\Piggy Bank Mod.csprojAssemblyReference.cache
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Piggy Bank Mod\obj\Debug\Piggy Bank Mod.csproj.CoreCompileInputs.cache
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Piggy Bank Mod\obj\Debug\Piggy Bank Mod.dll
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Piggy Bank Mod\obj\Debug\Piggy Bank Mod.pdb

@@ -1,0 +1,6 @@
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\Better Community Kitchen\bin\Debug\BCC.dll
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\Better Community Kitchen\bin\Debug\BCC.pdb
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\Better Community Kitchen\obj\Debug\Better Community Center.csprojAssemblyReference.cache
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\Better Community Kitchen\obj\Debug\Better Community Center.csproj.CoreCompileInputs.cache
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\Better Community Kitchen\obj\Debug\BCC.dll
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\Better Community Kitchen\obj\Debug\BCC.pdb

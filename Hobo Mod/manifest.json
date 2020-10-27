@@ -1,0 +1,9 @@
+﻿{
+    "Name": "Hobo Mod",
+    "Author": "MindMeltMax",
+    "Version": "1.0.0",
+    "Description": "test hobo mod",
+    "UniqueID": "MindMeltMax.HoboMod",
+    "UpdateKeys": [ "Nexus:???" ],
+    "EntryDll":  "Hobo Mod.dll"
+}

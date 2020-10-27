@@ -1,0 +1,6 @@
+C:\Program Files\Ampps\www\Personal\Stardew Valley Decompiled\LockedCrabPot\obj\Debug\LockedSignsMod.csproj.CoreCompileInputs.cache
+C:\Program Files\Ampps\www\Personal\Stardew Valley Decompiled\LockedCrabPot\obj\Debug\LockedSignsMod.csproj.CopyComplete
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\LockedCrabPot\LockedSignsMod.dll
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\LockedCrabPot\LockedSignsMod.pdb
+C:\Program Files\Ampps\www\Personal\Stardew Valley Decompiled\LockedCrabPot\obj\Debug\LockedSignsMod.dll
+C:\Program Files\Ampps\www\Personal\Stardew Valley Decompiled\LockedCrabPot\obj\Debug\LockedSignsMod.pdb

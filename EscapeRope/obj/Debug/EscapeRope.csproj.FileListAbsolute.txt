@@ -1,0 +1,6 @@
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\EscapeRope\bin\Debug\EscapeRope.dll
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\EscapeRope\bin\Debug\EscapeRope.pdb
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\EscapeRope\obj\Debug\EscapeRope.csprojAssemblyReference.cache
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\EscapeRope\obj\Debug\EscapeRope.csproj.CoreCompileInputs.cache
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\EscapeRope\obj\Debug\EscapeRope.dll
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\EscapeRope\obj\Debug\EscapeRope.pdb

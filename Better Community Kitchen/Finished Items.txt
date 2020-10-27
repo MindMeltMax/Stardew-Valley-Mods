@@ -1,0 +1,8 @@
+Vault accepts gold and allows withdrawal.
+
+Kitchen works, Pantry recieves random donations which can be tracked from the 
+donation sheet. Donation sheet tracks player donations aswell, this is kind
+of buggy as of now.
+
+Crafts room has a working dye menu on the dye pots and loom is currently a
+tailor menu, possibly change to normal loom?

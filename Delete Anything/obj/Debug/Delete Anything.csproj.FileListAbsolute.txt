@@ -1,0 +1,6 @@
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Delete Anything\bin\Debug\Delete Anything.dll
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Delete Anything\bin\Debug\Delete Anything.pdb
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Delete Anything\obj\Debug\Delete Anything.csprojAssemblyReference.cache
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Delete Anything\obj\Debug\Delete Anything.csproj.CoreCompileInputs.cache
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Delete Anything\obj\Debug\Delete Anything.dll
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Delete Anything\obj\Debug\Delete Anything.pdb

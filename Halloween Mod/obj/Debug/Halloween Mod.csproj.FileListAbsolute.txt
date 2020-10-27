@@ -1,0 +1,6 @@
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\Halloween Mod\obj\Debug\Halloween Mod.csprojAssemblyReference.cache
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\Halloween Mod\obj\Debug\Halloween Mod.csproj.CoreCompileInputs.cache
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\Halloween Mod\bin\Debug\Joja's Hauntings.dll
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\Halloween Mod\bin\Debug\Joja's Hauntings.pdb
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\Halloween Mod\obj\Debug\Joja's Hauntings.dll
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods\Halloween Mod\obj\Debug\Joja's Hauntings.pdb

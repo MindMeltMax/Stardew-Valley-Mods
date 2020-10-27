@@ -1,0 +1,10 @@
+{
+    "Name": "Delete Anything",
+    "Author": "MindMeltMax",
+    "Version": "1.0.0",
+    "Description": "Allows you to delete any object you want",
+    "UniqueID": "MindMeltMax.MassDelete",
+    "EntryDll": "Delete Anything.dll",
+    "MinimumApiVersion": "3.0.0",
+    "UpdateKeys": ["nexus:XXXX"]
+  }

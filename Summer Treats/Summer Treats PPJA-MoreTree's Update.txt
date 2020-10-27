@@ -1,0 +1,98 @@
+Summer Treats PPJA-MoreTree's Sprites
+[
+    Objects
+    [
+        Almond Yogurt: Finished; //Scraped
+
+        Banana Smoothie: Finished;
+        Banana Popsicle: Finished;
+        Banana Yogurt: Finished;
+
+        Cashew Yogurt: Finished; //Scraped
+
+        Dragon Fruit Yogurt: Finished;
+        Dragon Fruit Popsicle: Finished;
+        Dragon Fruit Smoothie: Finished;
+
+        Grapefruit Smoothie: Finished;
+        Grapefruit Yogurt: Finished;
+        Grapefruit Popsicle: Finished;
+
+        Lemon Yogurt: Finished;
+        Lemon Popsicle: Finished;
+        Lemon Smoothie: Finished;
+
+        Lime Yogurt: Finished;
+        Lime Smoothie: Finished;
+        Lime Popsicle: Finished;
+
+        Mango Smoothie: Finished;
+        Mango Popsicle: Finished;
+        Mango Yogurt: Finished;
+
+        Papaya Smoothie: Finished;
+        Papaya Yogurt: Finished;
+        Papaya Popsicle: Finished;
+
+        Pear Yogurt: Finished;
+        Pear Popsicle: Finished;
+        Pear Smoothie: Finished;
+
+        Persimmon Smoothie: Finished;
+
+        Walnut Yogurt: Finished; //Scraped
+    ]
+];
+
+Summer Treats PPJA-MoreTree's Code
+[
+    Objects
+    [
+        Almond Yogurt: ; //Scraped
+
+        Banana Smoothie: Finished;
+        Banana Popsicle: Finished;
+        Banana Yogurt: Finished;
+
+        Cashew Yogurt: ; //Scraped
+
+        Dragon Fruit Yogurt: Finished;
+        Dragon Fruit Popsicle: Finished;
+        Dragon Fruit Smoothie: Finished;
+
+        Grapefruit Smoothie: Finished;
+        Grapefruit Yogurt: Finished;
+        Grapefruit Popsicle: Finished;
+
+        Lemon Yogurt: Finished;
+        Lemon Popsicle: Finished;
+        Lemon Smoothie: Finished;
+
+        Lime Yogurt: Finished;
+        Lime Smoothie: Finished;
+        Lime Popsicle: Finished;
+
+        Mango Smoothie: Finished;
+        Mango Popsicle: Finished;
+        Mango Yogurt: Finished;
+
+        Papaya Smoothie: Finished;
+        Papaya Yogurt: Finished;
+        Papaya Popsicle: Finished;
+
+        Pear Yogurt: Finished;
+        Pear Popsicle: Finished;
+        Pear Smoothie: Finished;
+
+        Pecan Yogurt: ; //Scraped
+
+        Persimmon Smoothie: Finished;
+
+        Walnut Yogurt: ; //Scraped
+    ]
+];
+
+Additional
+[
+    Fixes For clashing items: ;
+]

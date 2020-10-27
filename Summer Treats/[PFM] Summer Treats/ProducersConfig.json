@@ -1,0 +1,29 @@
+[
+    {
+        "ProducerName": "Blender",
+		"AlternateFrameProducing": false, 
+		"AlternateFrameWhenReady": false, 
+		"DisableBouncingAnimationWhileWorking": false,
+		"ProducingAnimation": { 
+            "RelativeFrameIndex": [1, 2]
+        }
+    },
+    {
+        "ProducerName": "Freezer",
+        "AlternateFrameProducing": false,
+        "AlternateFrameWhenReady": false,
+        "DisableBouncingAnimationWhileWorking": false,
+        "ProducingAnimation": { 
+            "RelativeFrameIndex": [1]
+        },
+        "ReadyAnimation": {
+            "RelativeFrameIndex": [2]
+        }
+    },
+    {
+        "ProducerName": "Frozen Yogurt Dispenser",
+        "AlternateFrameProducing": true,
+        "AlternateFrameWhenReady": false,
+        "DisableBouncingAnimationWhileWorking": false
+    }
+]

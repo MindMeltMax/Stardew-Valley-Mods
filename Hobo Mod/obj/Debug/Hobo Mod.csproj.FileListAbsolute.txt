@@ -1,0 +1,9 @@
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Hobo Mod\obj\Debug\Hobo Mod.csprojAssemblyReference.cache
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Hobo Mod\obj\Debug\Hobo Mod.csproj.CoreCompileInputs.cache
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Hobo Mod\bin\Debug\Hobo Mod.dll
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Hobo Mod\bin\Debug\Hobo Mod.pdb
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Hobo Mod\obj\Debug\Hobo Mod.dll
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Hobo Mod\obj\Debug\Hobo Mod.pdb
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Hobo Mod\bin\Debug\Newtonsoft.Json.dll
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Hobo Mod\bin\Debug\Newtonsoft.Json.xml
+C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Hobo Mod\obj\Debug\Hobo Mod.csproj.CopyComplete

@@ -1,0 +1,11 @@
+{
+    "Name": "Lime Popsicle",
+    "Description": "90% Water 8% Fruit 2% Stick, Warning: extremely sour",
+    "Price": 250,
+    "Category": "ArtisanGoods",
+    "Edibility": 18,
+    "EdibleIsDrink": false,
+    "Recipe": null,
+    "EdibleBuffs": null,
+    "EnableWithMod": "ppja.moretrees"
+}
