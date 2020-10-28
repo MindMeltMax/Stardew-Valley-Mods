@@ -57,13 +57,13 @@ namespace BCC
         public Vector2 OOBCCFridge3 = new Vector2((int)7402, (int)7400);
         public Vector2 OOBCCFridge4 = new Vector2((int)7403, (int)7400);
         public Vector2 OOBCCFridge5 = new Vector2((int)7404, (int)7400);
-        public List<Chest> CCKitchenChests = new List<Chest>();
 
         public static Chest CCFridge1Chest;
         public static Chest CCFridge2Chest;
         public static Chest CCFridge3Chest;
         public static Chest CCFridge4Chest;
         public static Chest CCFridge5Chest;
+        public List<Chest> CCKitchenChests = new List<Chest>();
 
         public static string TodaysDonations;
         public string YesterdaysDonations;
@@ -78,6 +78,7 @@ namespace BCC
 
         public bool hasBeenAdded = false;
         public bool DonationsAddedForToday = false;
+        public bool hasCPCCUpdate = false;
 
         //SMAPI Reference
         public override void Entry(IModHelper helper)
@@ -90,12 +91,12 @@ namespace BCC
 
             sheetPath = Helper.Content.GetActualAssetKey("Assets/Textures/customTiles.png", ContentSource.ModFolder);
             ModFolderPath = Path.GetFullPath(Path.Combine(Helper.DirectoryPath, @"..\"));
+            hasCPCCUpdate = helper.ModRegistry.IsLoaded("LemurKat.CommunityCenter.CP");
         }
 
         //Events
         private void GameLoop_DayStarted(object sender, DayStartedEventArgs e)
         {
-
             if (CommunityCenter == null)
             {
                 if (Game1.player.hasCompletedCommunityCenter() && Game1.player.eventsSeen.Contains(191393))
@@ -290,15 +291,15 @@ namespace BCC
                         //Monitor.Log($"Fridge1 : {CCFridge1Chest.items.Count} | Fridge2 : {CCFridge2Chest.items.Count} | Fridge3 : {CCFridge3Chest.items.Count} | Fridge4 : {CCFridge4Chest.items.Count} | Fridge5 : {CCFridge5Chest.items.Count} |", LogLevel.Debug);
                     }
                 }
-                else if(property == "CCDonations")
+                else if (property == "CCDonations")
                 {
                     if (TodaysDonations == null)
                         checkForDonations();
-                    if(Season == Game1.Date.Season && YesterdaysDonations == null || Season != Game1.Date.Season && YesterdaysDonations == null)
+                    if (Season == Game1.Date.Season && YesterdaysDonations == null || Season != Game1.Date.Season && YesterdaysDonations == null)
                         Game1.activeClickableMenu = new PantryDonationSheet($"{Game1.Date.Season} : {Game1.Date.DayOfMonth} ^" + TodaysDonations, "Pantry Donations", Monitor, Helper);
-                    else if(Season == Game1.Date.Season && YesterdaysDonations != null)
-                        Game1.activeClickableMenu = new PantryDonationSheet($"{Game1.Date.Season} : {Game1.Date.DayOfMonth} ^" + TodaysDonations + $"^{Game1.Date.Season} : {Game1.Date.DayOfMonth-1} ^" + YesterdaysDonations, "Pantry Donations", Monitor, Helper);
-                    else if(Season != Game1.Date.Season && YesterdaysDonations != null)
+                    else if (Season == Game1.Date.Season && YesterdaysDonations != null)
+                        Game1.activeClickableMenu = new PantryDonationSheet($"{Game1.Date.Season} : {Game1.Date.DayOfMonth} ^" + TodaysDonations + $"^{Game1.Date.Season} : {Game1.Date.DayOfMonth - 1} ^" + YesterdaysDonations, "Pantry Donations", Monitor, Helper);
+                    else if (Season != Game1.Date.Season && YesterdaysDonations != null)
                         Game1.activeClickableMenu = new PantryDonationSheet($"{Game1.Date.Season} : {Game1.Date.DayOfMonth} ^" + TodaysDonations + $"^{PreviousSeason} : {28} ^" + YesterdaysDonations, "Pantry Donations", Monitor, Helper);
                 }
 
@@ -313,7 +314,7 @@ namespace BCC
                         checkForDonations();
                     Game1.activeClickableMenu = (IClickableMenu)new DyeMenu();
                 }
-                else if(property == "CCTailor")
+                else if (property == "CCTailor")
                 {
                     if (TodaysDonations == null)
                         checkForDonations();
@@ -325,8 +326,10 @@ namespace BCC
 
                 #region Vault
 
-                else if(property == "CCVault")
+                else if (property == "CCVault")
                 {
+                    if (TodaysDonations == null)
+                        checkForDonations();
                     Util.openVault();
                 }
 
@@ -335,12 +338,27 @@ namespace BCC
 
                 #region Bulletin
 
-                else if(property == "CCBulletin")
+                else if (property == "CCBulletin")
                 {
+                    if (TodaysDonations == null)
+                        checkForDonations();
                     Game1.activeClickableMenu = (IClickableMenu)new ItemRequestBoard(Monitor);
+                }
+                else if (hasCPCCUpdate && property == "Message \"CCBulletinBoard."+Game1.Date.DayOfMonth.ToString()+"\"")
+                {
+                    Helper.Events.GameLoop.UpdateTicked += GameLoop_UpdateTicked1;
                 }
 
                 #endregion Bulletin
+            }
+        }
+
+        private void GameLoop_UpdateTicked1(object sender, UpdateTickedEventArgs e)
+        {
+            if (Game1.activeClickableMenu == null)
+            {
+                Game1.activeClickableMenu = (IClickableMenu)new ItemRequestBoard(Monitor);
+                Helper.Events.GameLoop.UpdateTicked -= GameLoop_UpdateTicked1;
             }
         }
 
@@ -357,6 +375,7 @@ namespace BCC
             Helper.Events.GameLoop.SaveCreated -= GameLoop_SaveCreated;
             Helper.Events.GameLoop.ReturnedToTitle -= GameLoop_ReturnedToTitle;
             Helper.Events.GameLoop.DayStarted += GameLoop_DayStarted;
+
             CommunityCenter = null;
             customTileSheet = null;
             TodaysDonations = null;
@@ -379,8 +398,6 @@ namespace BCC
             int DonationsY = (int)CCDonation1.Y;
             Layer DonationsLayer = CommunityCenter.map.GetLayer("Front");
             DonationsLayer.Tiles[DonationsX, DonationsY] = new StaticTile(DonationsLayer, sheet, BlendMode.Alpha, 1);
-
-
         }
         private void SetTilePropertiesCC()
         {
@@ -414,10 +431,13 @@ namespace BCC
             CommunityCenter.setTileProperty((int)CCVault3.X, (int)CCVault3.Y, "Buildings", "Action", "CCVault");
             CommunityCenter.setTileProperty((int)CCVault4.X, (int)CCVault4.Y, "Buildings", "Action", "CCVault");
 
-            //Bulletin
-            CommunityCenter.setTileProperty((int)CCBulletin1.X, (int)CCBulletin1.Y, "Buildings", "Action", "CCBulletin");
-            CommunityCenter.setTileProperty((int)CCBulletin2.X, (int)CCBulletin2.Y, "Buildings", "Action", "CCBulletin");
-            CommunityCenter.setTileProperty((int)CCBulletin3.X, (int)CCBulletin3.Y, "Buildings", "Action", "CCBulletin");
+            if(!hasCPCCUpdate)
+            {
+                //Bulletin
+                CommunityCenter.setTileProperty((int)CCBulletin1.X, (int)CCBulletin1.Y, "Buildings", "Action", "CCBulletin");
+                CommunityCenter.setTileProperty((int)CCBulletin2.X, (int)CCBulletin2.Y, "Buildings", "Action", "CCBulletin");
+                CommunityCenter.setTileProperty((int)CCBulletin3.X, (int)CCBulletin3.Y, "Buildings", "Action", "CCBulletin");
+            }
         }
         private void checkFridgesInCC()
         {

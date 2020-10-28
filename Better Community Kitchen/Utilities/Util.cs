@@ -429,6 +429,11 @@ namespace BCC.Utilities
             }
         }
 
+        public static void CPBulletinDialogueExit()
+        {
+            Game1.activeClickableMenu = (IClickableMenu)new ItemRequestBoard(Monitor);
+        }
+
         #endregion Bulletin
 
 
