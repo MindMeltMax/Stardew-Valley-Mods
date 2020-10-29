@@ -4,5 +4,9 @@
     "Close": "Close Vault Door",
     "Stored": "Stored Gold",
 
-    "PantryTitle": "Donate"
+    "PantryTitle": "Community Pantry",
+
+    "CoalChestTitle": "Community Coal",
+
+    "BoilerTitle": "Boiler"
 }

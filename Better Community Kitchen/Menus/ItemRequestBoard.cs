@@ -40,7 +40,7 @@ namespace BCC.Menus
             xPositionOnScreen = (int)CenterScreen.X;
             yPositionOnScreen = (int)CenterScreen.Y;
             upperRightCloseButton = new ClickableTextureComponent(new Rectangle(xPositionOnScreen + width - 20, yPositionOnScreen, 48, 48), Game1.mouseCursors, new Rectangle(337, 494, 12, 12), 4f);
-            RequestItemButton = new ClickableComponent(new Rectangle(xPositionOnScreen+width/2 - 128, yPositionOnScreen+height-128, (int)Game1.dialogueFont.MeasureString(RequestStandard).X + 24, (int)Game1.dialogueFont.MeasureString(RequestStandard).Y+24), "");
+            RequestItemButton = new ClickableComponent(new Rectangle(xPositionOnScreen + width / 2 - 128, yPositionOnScreen + height - 128, (int)Game1.dialogueFont.MeasureString(RequestStandard).X + 24, (int)Game1.dialogueFont.MeasureString(RequestStandard).Y + 24), "");
             RequestItemButton.myID = 0;
             if (hasRequested3Items)
                 RequestItemButton.visible = false;
@@ -88,14 +88,6 @@ namespace BCC.Menus
             }
             Util.TryToRemoveRequests();
 
-            foreach (ClickableTextureComponent component in textures)
-            {
-                if (component.containsPoint(x, y))
-                {
-                    Util.TryToRemoveRequests();
-                }
-            }
-
 
             if (!RequestItemButton.visible || !RequestItemButton.containsPoint(x, y))
                 return;
@@ -126,7 +118,10 @@ namespace BCC.Menus
 
         public override void draw(SpriteBatch b)
         {
-            b.Draw(Game1.fadeToBlackRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Black * 0.75f);
+            if (!Game1.options.showMenuBackground)
+                b.Draw(Game1.fadeToBlackRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Black * 0.4f);
+            else
+                drawBackground(b);
             b.Draw(BackgroundTexture, new Vector2((float)xPositionOnScreen, (float)yPositionOnScreen), new Rectangle(0, 0, 338, 198), Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 1f);
             if (!hasRequestedAnything)
                 b.DrawString(Game1.dialogueFont, Game1.content.LoadString("No requests posted right now"), new Vector2((float)xPositionOnScreen + 384, (float)yPositionOnScreen + 320), Game1.textColor);
@@ -146,7 +141,7 @@ namespace BCC.Menus
                 bool hasBeen7Days = false;
                 bool drawCompletionString = false;
                 RequestString = "";
-                foreach(Request r in Requests.RequestList)
+                foreach (Request r in Requests.RequestList)
                 {
                     string itemName = Game1.objectInformation[r.itemIndex].Split('/')[0];
                     if (itemName == component.name)
@@ -158,18 +153,22 @@ namespace BCC.Menus
                             hasBeen7Days = true;
                     }
                 }
-                if (!drawCompletionString)
+                if (!drawCompletionString && !hasBeen7Days)
                 {
                     if (itemCount == 1)
                         RequestString = $"I'm looking for {itemCount} {component.name.ToLower()}";
                     else
                         RequestString = $"I'm looking for {itemCount} {component.name.ToLower()}s";
                 }
-                else
+                else if (drawCompletionString)
                 {
                     RequestString = Util.CompletionString;
                 }
-                component.draw(b, hasBeen7Days ? Color.Black*0.2f : Color.White, 0.86f, 0);
+                else if (hasBeen7Days)
+                    RequestString = "Request not filled";
+                else
+                    RequestString = "null";
+                component.draw(b, hasBeen7Days ? Color.Black * 0.2f : Color.White, 0.86f, 0);
                 b.DrawString(Game1.dialogueFont, RequestString, new Vector2((float)xPositionOnScreen + 352 + index1, (float)yPositionOnScreen + 328 + index2), drawCompletionString ? Color.LightGreen : Game1.textColor);
 
                 index2 += 96;

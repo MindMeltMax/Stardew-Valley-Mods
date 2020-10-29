@@ -113,6 +113,7 @@ namespace BCC.Menus
 
         public override void receiveLeftClick(int x, int y, bool playSound = true)
         {
+            base.receiveLeftClick(x, y, playSound);
             foreach (ClickableTextureComponent component in Items[Page])
             {
                 var isUnLocked = Convert.ToBoolean(component.name.Split('/')[1]);
@@ -164,7 +165,10 @@ namespace BCC.Menus
 
         public override void draw(SpriteBatch b)
         {
-            b.Draw(Game1.fadeToBlackRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Black * 0.75f);
+            if (!Game1.options.showMenuBackground)
+                b.Draw(Game1.fadeToBlackRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Black * 0.4f);
+            else
+                drawBackground(b);
             base.draw(b);
             Game1.drawDialogueBox(xPositionOnScreen, yPositionOnScreen, width, height, false, true);
             if (Page > 0)

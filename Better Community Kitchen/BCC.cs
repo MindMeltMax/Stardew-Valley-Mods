@@ -52,17 +52,29 @@ namespace BCC
         public Vector2 CCBulletin2 = new Vector2((int)46, (int)12);
         public Vector2 CCBulletin3 = new Vector2((int)47, (int)12);
 
+        public Vector2 CCBoiler1 = new Vector2((int)62, (int)13);
+        public Vector2 CCBoiler2 = new Vector2((int)63, (int)13);
+
+        public Vector2 CCBoilerCoal1 = new Vector2((int)64, (int)13);
+        public Vector2 CCBoilerCoal2 = new Vector2((int)65, (int)13);
+        public Vector2 CCBoilerCoal3 = new Vector2((int)66, (int)14);
+        public Vector2 CCBoilerCoal4 = new Vector2((int)66, (int)15);
+        public Vector2 CCBoilerCoal5 = new Vector2((int)64, (int)20);
+        public Vector2 CCBoilerCoal6 = new Vector2((int)65, (int)20);
+
         public Vector2 OOBCCFridge1 = new Vector2((int)7400, (int)7400);
         public Vector2 OOBCCFridge2 = new Vector2((int)7401, (int)7400);
         public Vector2 OOBCCFridge3 = new Vector2((int)7402, (int)7400);
         public Vector2 OOBCCFridge4 = new Vector2((int)7403, (int)7400);
         public Vector2 OOBCCFridge5 = new Vector2((int)7404, (int)7400);
+        public Vector2 OOBCCCoalChest = new Vector2((int)7405, (int)7400);
 
         public static Chest CCFridge1Chest;
         public static Chest CCFridge2Chest;
         public static Chest CCFridge3Chest;
         public static Chest CCFridge4Chest;
         public static Chest CCFridge5Chest;
+        public static Chest CCCoalChest;
         public List<Chest> CCKitchenChests = new List<Chest>();
 
         public static string TodaysDonations;
@@ -224,6 +236,9 @@ namespace BCC
             CCFridge5Chest.fridge.Value = true;
             CCFridge5Chest.Name = "Store5";
             CCKitchenChests.Add(CCFridge5Chest);
+
+            CCCoalChest = new Chest(true, OOBCCCoalChest);
+            CCCoalChest.name = "StoreCoal";
         }
 
         private void GameLoop_Saving(object sender, SavingEventArgs e)
@@ -249,7 +264,7 @@ namespace BCC
             string property = currentLocation.doesTileHaveProperty((int)posUnderMouse.X, (int)posUnderMouse.Y, "Action", "Buildings");
 
 
-            checkFridgesInCC();
+            checkChestsInCC();
             addFridgesToListAfterCheck();
             if (CCKitchenChests.Count == 5)
                 checkForDonations();
@@ -350,6 +365,28 @@ namespace BCC
                 }
 
                 #endregion Bulletin
+
+
+                #region Boiler
+
+                else if(property == "CCBoilerCoal")
+                {
+                    if (TodaysDonations == null)
+                        checkForDonations();
+                    Game1.activeClickableMenu = (IClickableMenu)new BoilerCoalMenu(CCCoalChest, Monitor, Helper);
+                }
+
+                else if(property == "CCBoiler")
+                {
+                    if (TodaysDonations == null)
+                        checkForDonations();
+                    Game1.activeClickableMenu = (IClickableMenu)new BoilerMenu(Monitor, CCCoalChest);
+                    /*Game1.activeClickableMenu = (IClickableMenu)new ItemGrabMenu((IList<Item>)CCCoalChest.items, false, true, new InventoryMenu.highlightThisItem(InventoryMenu.highlightAllItems),
+                                                    new ItemGrabMenu.behaviorOnItemSelect(CCCoalChest.grabItemFromInventory), (string)null, new ItemGrabMenu.behaviorOnItemSelect(CCCoalChest.grabItemFromChest),
+                                                    false, true, true, true, true, 1, sourceItem: ((bool)(NetFieldBase<bool, NetBool>)CCCoalChest.fridge ? (Item)null : (Item)CCCoalChest), context: ((object)CCCoalChest));*/
+                }
+
+                #endregion Boiler
             }
         }
 
@@ -431,7 +468,17 @@ namespace BCC
             CommunityCenter.setTileProperty((int)CCVault3.X, (int)CCVault3.Y, "Buildings", "Action", "CCVault");
             CommunityCenter.setTileProperty((int)CCVault4.X, (int)CCVault4.Y, "Buildings", "Action", "CCVault");
 
-            if(!hasCPCCUpdate)
+            //Boiler
+            CommunityCenter.setTileProperty((int)CCBoilerCoal1.X, (int)CCBoilerCoal1.Y, "Buildings", "Action", "CCBoilerCoal");
+            CommunityCenter.setTileProperty((int)CCBoilerCoal2.X, (int)CCBoilerCoal2.Y, "Buildings", "Action", "CCBoilerCoal");
+            CommunityCenter.setTileProperty((int)CCBoilerCoal3.X, (int)CCBoilerCoal3.Y, "Buildings", "Action", "CCBoilerCoal");
+            CommunityCenter.setTileProperty((int)CCBoilerCoal4.X, (int)CCBoilerCoal4.Y, "Buildings", "Action", "CCBoilerCoal");
+            CommunityCenter.setTileProperty((int)CCBoilerCoal5.X, (int)CCBoilerCoal5.Y, "Buildings", "Action", "CCBoilerCoal");
+            CommunityCenter.setTileProperty((int)CCBoilerCoal6.X, (int)CCBoilerCoal6.Y, "Buildings", "Action", "CCBoilerCoal");
+            CommunityCenter.setTileProperty((int)CCBoiler1.X, (int)CCBoiler1.Y, "Buildings", "Action", "CCBoiler");
+            CommunityCenter.setTileProperty((int)CCBoiler2.X, (int)CCBoiler2.Y, "Buildings", "Action", "CCBoiler");
+
+            if (!hasCPCCUpdate)
             {
                 //Bulletin
                 CommunityCenter.setTileProperty((int)CCBulletin1.X, (int)CCBulletin1.Y, "Buildings", "Action", "CCBulletin");
@@ -439,7 +486,7 @@ namespace BCC
                 CommunityCenter.setTileProperty((int)CCBulletin3.X, (int)CCBulletin3.Y, "Buildings", "Action", "CCBulletin");
             }
         }
-        private void checkFridgesInCC()
+        private void checkChestsInCC()
         {
             if (CommunityCenter.objects.ContainsKey(OOBCCFridge1))
             {
@@ -480,6 +527,11 @@ namespace BCC
             }
             else
                 CommunityCenter.objects.Add(OOBCCFridge5, new Chest(true, OOBCCFridge5));
+
+            if (CommunityCenter.objects.ContainsKey(OOBCCCoalChest))
+                CCCoalChest = CommunityCenter.objects[OOBCCCoalChest] as Chest ?? new Chest(true, OOBCCCoalChest);
+            else
+                CommunityCenter.objects.Add(OOBCCCoalChest, new Chest(true, OOBCCCoalChest));
         }
         private void addFridgesToListAfterCheck()
         {
@@ -526,7 +578,7 @@ namespace BCC
                                     {
                                         if (!hasBeenAdded)
                                         {
-                                            if (Chest.capacity + 1 != chest.items.Count || Util.DoesChestHaveItem(itemFromNPC) != null)
+                                            if (Chest.capacity + 1 != chest.items.Count || Util.DoesChestHaveItem(itemFromNPC))
                                             {
                                                 var oneItem = itemFromNPC == null ? Util.getRandomItemForDonation(person).getOne() : itemFromNPC.getOne(); // Avoid Nulls After Inevitable Failure -_-
                                                 chest.addItem(oneItem);

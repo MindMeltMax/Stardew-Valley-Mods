@@ -209,17 +209,17 @@ namespace BCC.Utilities
             return null;
         }
 
-        public static string DoesChestHaveItem(Item item)
+        public static bool DoesChestHaveItem(Item item)
         {
             if (PantryMenu.CCFridgeChests != null)
             {
                 foreach(Chest chest in PantryMenu.CCFridgeChests)
                 {
                     if (chest.items.Contains(item))
-                        return chest.name;
+                        return true;
                 }
             }
-            return null;
+            return false;
         }
 
 
@@ -386,7 +386,7 @@ namespace BCC.Utilities
                 return;
             string[] array = Game1.objectInformation[itemIndex].Split('/');
             int itemPrice = Convert.ToInt32(array[1]);
-            int totalPrice = itemCount * (itemPrice * (Game1.random.Next((int)1.5, (int)2.1)));
+            int totalPrice = itemCount * (itemPrice * (Game1.random.Next((int)1.5, (int)2.5)));
             if (totalPrice > itemCount * (itemPrice * 2))
                 totalPrice = itemCount * (itemPrice * 2);
             int dateToday = Game1.Date.TotalDays;
@@ -399,12 +399,15 @@ namespace BCC.Utilities
         public static void TryToRemoveRequests()
         {
             int Days = Game1.Date.TotalDays;
-            foreach(Request r in Requests.RequestList)
+            foreach (Request r in Requests.RequestList)
             {
                 if (Days - r.CreationDate <= 7 && CompletedRequestIndex == 0)
                     return;
-                else if(Days - r.CreationDate > 7 || CompletedRequestIndex == r.itemIndex)
+                else if (Days - r.CreationDate > 7 || CompletedRequestIndex == r.itemIndex)
+                {
                     removableRequests.Add(r);
+                    break;
+                }
             }
             foreach (Request r in removableRequests)
                 Requests.RequestList.Remove(r);
@@ -438,6 +441,11 @@ namespace BCC.Utilities
 
 
         #region Boiler
+
+        public static bool IsFuelItem(Item i) => i != null && i.parentSheetIndex == 382 || (i.parentSheetIndex == 388 && i.Stack >= 20) || (i.parentSheetIndex == 709 && i.Stack >= 5);
+        public static void CoalChestExit()
+        {
+        }
 
         public static void Multi_Smelt(SObject smeltable, bool probe, Farmer who)
         {

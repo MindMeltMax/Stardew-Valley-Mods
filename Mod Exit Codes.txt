@@ -1,5 +1,0 @@
-Exit Code 001 : TileSet Error - TileSet could not be added to map
-
-Exit Code 002 : TileSet Error - TileSet was not found in map
-
-Exit Code 003 : Tile Error - Tile could not be added to map

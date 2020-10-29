@@ -94,7 +94,8 @@ namespace BCC.Menus
 
         public override void receiveLeftClick(int x, int y, bool playSound = true)
         {
-            if(leftButton.containsPoint(x, y))
+            base.receiveLeftClick(x, y, playSound);
+            if (leftButton.containsPoint(x, y))
             {
                 int num = currentInputValue - 1;
                 if(num >= minRequestCount)
@@ -173,7 +174,10 @@ namespace BCC.Menus
 
         public override void draw(SpriteBatch b)
         {
-            b.Draw(Game1.fadeToBlackRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Black * 0.75f);
+            if (!Game1.options.showMenuBackground)
+                b.Draw(Game1.fadeToBlackRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Black * 0.4f);
+            else
+                drawBackground(b);
             base.draw(b);
             Game1.drawDialogueBox(xPositionOnScreen, yPositionOnScreen, width, height, false, true);
             SpriteText.drawStringWithScrollCenteredAt(b, MenuString1, Game1.viewport.Width / 2 - 50, Game1.viewport.Height / 2 - 310, MenuString1, 1f, -1, 0, 0.88f, false);

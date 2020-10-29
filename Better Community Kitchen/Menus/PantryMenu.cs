@@ -25,6 +25,8 @@ namespace BCC.Menus
 
         public PantryMenu(IModHelper helper, IMonitor monitor) : base(Game1.viewport.Width / 2 - 384, Game1.viewport.Height / 2 + 36, true, highlightMethod: new InventoryMenu.highlightThisItem(Util.IsEdibleCookableItem), capacity: 36)
         {
+            Helper = helper;
+            Monitor = monitor;
             exitFunction = (IClickableMenu.onExit)(() => Util.PantryExit(Donated));
         }
         public PantryMenu(List<Chest> fridgeList, IModHelper helper, IMonitor monitor) : base(Game1.viewport.Width / 2 - 384, Game1.viewport.Height / 2 + 36, true, highlightMethod: new InventoryMenu.highlightThisItem(Util.IsEdibleCookableItem), capacity: 36)
@@ -37,6 +39,7 @@ namespace BCC.Menus
 
         public override void receiveLeftClick(int x, int y, bool playSound = true)
         {
+            base.receiveLeftClick(x, y, playSound);
             Item itemXY = getItemAt(x, y);
             if (itemXY.Name != Util.previousDonatedName)
                 Amount = 0;
@@ -50,7 +53,7 @@ namespace BCC.Menus
                         {
                             if (!hasBeenAdded)
                             {
-                                if (Chest.capacity != chest.items.Count || Util.DoesChestHaveItem(itemXY) != null)
+                                if (Chest.capacity != chest.items.Count || Util.DoesChestHaveItem(itemXY))
                                 {
                                     var oneItem = itemXY.getOne();
                                     chest.addItem(oneItem);
