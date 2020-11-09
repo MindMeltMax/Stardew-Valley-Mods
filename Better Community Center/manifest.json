@@ -2,7 +2,7 @@
     "Name": "Better Community Center",
     "Author": "MindMeltMax",
     "Version": "1.0.0",
-    "Description": "Upgrades the community center with functionality",
+    "Description": "Upgrades the community center with usefullness",
     "UniqueID": "MindMeltMax.BCC",
     "EntryDll": "BCC.dll",
     "MinimumApiVersion": "3.0.0",

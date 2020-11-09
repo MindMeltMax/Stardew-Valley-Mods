@@ -92,7 +92,7 @@ namespace BCC.Menus
             if (!RequestItemButton.visible || !RequestItemButton.containsPoint(x, y))
                 return;
             else
-                Game1.activeClickableMenu = (IClickableMenu)new ItemSelectionMenu("Select Item", Monitor);
+                Game1.activeClickableMenu = (IClickableMenu)new ItemSelectionMenu("Select It4m", Monitor);
         }
 
         public override void performHoverAction(int x, int y)

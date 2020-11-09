@@ -10,3 +10,9 @@ D:\Code\Ampps\www\Personal\Stardew-Valley-Mods-MindMeltMax\Better Community Kitc
 D:\Code\Ampps\www\Personal\Stardew-Valley-Mods-MindMeltMax\Better Community Kitchen\obj\Debug\Better Community Center.csproj.CoreCompileInputs.cache
 D:\Code\Ampps\www\Personal\Stardew-Valley-Mods-MindMeltMax\Better Community Kitchen\obj\Debug\BCC.dll
 D:\Code\Ampps\www\Personal\Stardew-Valley-Mods-MindMeltMax\Better Community Kitchen\obj\Debug\BCC.pdb
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods-MindMeltMax\Better Community Center\obj\Debug\Better Community Center.csprojAssemblyReference.cache
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods-MindMeltMax\Better Community Center\obj\Debug\Better Community Center.csproj.CoreCompileInputs.cache
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods-MindMeltMax\Better Community Center\obj\Debug\BCC.dll
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods-MindMeltMax\Better Community Center\obj\Debug\BCC.pdb
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods-MindMeltMax\Better Community Center\bin\Debug\BCC.dll
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods-MindMeltMax\Better Community Center\bin\Debug\BCC.pdb

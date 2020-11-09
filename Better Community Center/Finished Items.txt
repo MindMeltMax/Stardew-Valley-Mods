@@ -6,3 +6,6 @@ of buggy as of now.
 
 Crafts room has a working dye menu on the dye pots and loom is currently a
 tailor menu, possibly change to normal loom?
+
+Bulletin board now allows the player to request up to 3 diffrent items with max stack of 5, 
+any item (including JA items) are requestable once they are shipped / found (archeology & minerals)

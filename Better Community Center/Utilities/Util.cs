@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Netcode;
 using StardewModdingAPI;
+using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
@@ -442,15 +443,49 @@ namespace BCC.Utilities
 
         #region Boiler
 
-        public static bool IsFuelItem(Item i) => i != null && i.parentSheetIndex == 382 || (i.parentSheetIndex == 388 && i.Stack >= 20) || (i.parentSheetIndex == 709 && i.Stack >= 5);
+        /*public static bool IsFuelItem(Item i) => i != null && i.parentSheetIndex == 382 || (i.parentSheetIndex == 388 && i.Stack >= 20) || (i.parentSheetIndex == 709 && i.Stack >= 5);
+        public static bool IsSmeltableItem(Item i) => i != null && (i.Name.ToLower().Contains("ore") || i.Name.ToLower().Contains("quartz")) && (i.category.Value == -12 || i.category.Value == -2 || i.category.Value == -15);
+        public static bool IsStackedSmeltableItem(Item i) => i != null && IsSmeltableItem(i) && i.Stack >= 5;
         public static void CoalChestExit()
         {
+        }
+
+        public static void BoilerExit()
+        {
+            foreach(ClickableComponent c in BoilerMenu.inputComponents)
+            {
+                if(c.item != null)
+                {
+                    BoilerData.dataList.Add(new data(c.item.parentSheetIndex, c.item.Stack, c.myID));
+                }
+            }
+            foreach (ClickableComponent c in BoilerMenu.outputComponents)
+            {
+                if (c.item != null)
+                {
+                    BoilerData.dataList.Add(new data(c.item.parentSheetIndex, c.item.Stack, c.myID));
+                }
+            }
+            Helper.Events.GameLoop.UpdateTicked += tempAwait;
+        }
+
+        private static void tempAwait(object sender, UpdateTickedEventArgs e)
+        {
+            BoilerMenu menu = new BoilerMenu();
+            if (!Game1.isTimePaused)
+            {
+                bool temp = menu.checkIfCanSmelt();
+                if (temp)
+                {
+                    Helper.Events.GameLoop.UpdateTicked -= tempAwait;
+                }
+            }
         }
 
         public static void Multi_Smelt(SObject smeltable, bool probe, Farmer who)
         {
             //Hold Unitll later
-        }
+        }*/
 
         #endregion Boiler
     }
