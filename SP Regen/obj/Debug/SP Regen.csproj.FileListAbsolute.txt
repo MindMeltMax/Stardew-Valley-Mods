@@ -4,3 +4,9 @@ C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Couch potato\bin\Debug\S
 C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Couch potato\obj\Debug\SP Regen.dll
 C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Couch potato\obj\Debug\SP Regen.pdb
 C:\Program Files\Ampps\www\Personal\Stardew Valley Mods\Couch potato\obj\Debug\SP Regen.csprojAssemblyReference.cache
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods-MindMeltMax\SP Regen\bin\Debug\SP Regen.dll
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods-MindMeltMax\SP Regen\bin\Debug\SP Regen.pdb
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods-MindMeltMax\SP Regen\obj\Debug\SP Regen.csprojAssemblyReference.cache
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods-MindMeltMax\SP Regen\obj\Debug\SP Regen.csproj.CoreCompileInputs.cache
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods-MindMeltMax\SP Regen\obj\Debug\SP Regen.dll
+D:\Code\Ampps\www\Personal\Stardew-Valley-Mods-MindMeltMax\SP Regen\obj\Debug\SP Regen.pdb
