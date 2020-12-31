@@ -10,32 +10,108 @@ using Microsoft.Xna.Framework;
 
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
-using System;
+using xTile.Dimensions;
 using System.Linq;
+using System.Net.Configuration;
+using System.Diagnostics.Contracts;
 
 namespace Piggy_Bank_Mod
 {
     public class ModEntry : Mod
     {
-        private PiggyBankGold gold;
+        private allGold allGold;
         private List<Response> responses;
+        private List<long> playerIds;
         private ITranslationHelper i18n => Helper.Translation;
 
+        public int tempGlobalId = -1;
         public static IJsonAssetsApi JA;
         public static bool hasExtendedReach;
+        public static bool hasJA;
 
         public override void Entry(IModHelper helper)
         {
             helper.Events.GameLoop.Saving += GameLoop_Saving;
             helper.Events.GameLoop.SaveLoaded += GameLoop_SaveLoaded;
             helper.Events.GameLoop.GameLaunched += GameLoop_GameLaunched;
-            helper.Events.GameLoop.UpdateTicked += GameLoop_UpdateTicked;
 
             helper.Events.Input.ButtonPressed += Input_ButtonPressed;
 
+            helper.Events.World.ObjectListChanged += World_ObjectListChanged;
+
             helper.Events.Multiplayer.PeerConnected += Multiplayer_PeerConnected;
+            helper.Events.Multiplayer.ModMessageReceived += Multiplayer_ModMessageReceived;
+
+            playerIds = new List<long>();
+        }
+
+        private void Multiplayer_ModMessageReceived(object sender, ModMessageReceivedEventArgs e)
+        {
+            if (e.FromModID == ModManifest.UniqueID && e.Type == "PBData")
+            {
+                allGold message = e.ReadAs<allGold>();
+                allGold = message;
+            }
+            if (allGold != null)
+            {
+                if (allGold.goldList != null)
+                    return;
+                else
+                {
+                    allGold.goldList = new List<PiggyBankGold>();
+                    Monitor.Log($"gold data list was null, creating new to prevent crash. Exit code for developer : PB-X1", LogLevel.Warn);
+                    return;
+                }
+            }
+            else
+            {
+                allGold = new allGold(new List<PiggyBankGold>());
+                Monitor.Log($"gold data was null, new data set created to prevent crash. Exit code for developer : PB-X2", LogLevel.Error);
+                return;
+            }
+        }
+
+        private void Multiplayer_PeerConnected(object sender, PeerConnectedEventArgs e)
+        {
+            if (!Game1.IsMasterGame)
+                return;
+            playerIds.Add(e.Peer.PlayerID);
+            allGold message = allGold;
+            Helper.Multiplayer.SendMessage<allGold>(message, "PBData", new[] { ModManifest.UniqueID });
+        }
+
+        private void World_ObjectListChanged(object sender, ObjectListChangedEventArgs e)
+        {
+            int id = 0;
+            for (int i = 0; i < allGold.goldList.Count; i++)
+                id++;
+
+            foreach(var i in e.Added)
+            {
+                if (i.Value.Name == "Piggy Bank")
+                {
+                    PiggyBankGold g = new PiggyBankGold("Basic Label", 0, new Vector2(i.Key.X, i.Key.Y), id, i.Value.owner);
+                    allGold.goldList.Add(g);
+                }
+            }
+
+            foreach(var i in e.Removed)
+            {
+                if(i.Value.Name == "Piggy Bank")
+                {
+                    PiggyBankGold removable = null;
+                    foreach(PiggyBankGold g in allGold.goldList)
+                    {
+                        if (g.BankTile == i.Key)
+                        {
+                            removable = g;
+                            break;
+                        }
+                    }
+                    if(removable != null)
+                        allGold.goldList.Remove(removable);
+                }
+            }
         }
 
         private void GameLoop_GameLaunched(object sender, GameLaunchedEventArgs e) //Get JsonAssets Api and directory on Game launch
@@ -44,65 +120,38 @@ namespace Piggy_Bank_Mod
             JA.LoadAssets(Path.Combine(Helper.DirectoryPath, "assets"));
 
             hasExtendedReach = Helper.ModRegistry.IsLoaded("spacechase0.ExtendedReach");
-        }
+            hasJA = Helper.ModRegistry.IsLoaded("spacechase0.JsonAssets");
 
-        private void GameLoop_UpdateTicked(object sender, UpdateTickedEventArgs e)
-        {
-            /*if (!Context.IsMultiplayer)
-                return;*/
-        }
-
-        private void Multiplayer_PeerConnected(object sender, PeerConnectedEventArgs e)
-        {
-            /*var farmerArray = Game1.getAllFarmers();
-
-            foreach (Farmer who in farmerArray)
+            if (!hasJA)
             {
-                var id = who.UniqueMultiplayerID;
+                Monitor.Log($"JsonAssets was not loaded, the mod will force itself to stop to avoid crashes", LogLevel.Error);
+                Helper.Events.GameLoop.Saving -= GameLoop_Saving;
+                Helper.Events.GameLoop.SaveLoaded -= GameLoop_SaveLoaded;
+                Helper.Events.GameLoop.GameLaunched -= GameLoop_GameLaunched;
+
+                Helper.Events.Input.ButtonPressed -= Input_ButtonPressed;
+
+                Helper.Events.World.ObjectListChanged -= World_ObjectListChanged;
+
+                Helper.Events.Multiplayer.PeerConnected -= Multiplayer_PeerConnected;
+                Helper.Events.Multiplayer.ModMessageReceived -= Multiplayer_ModMessageReceived;
             }
-
-            foreach(IMultiplayerPeer peer in Helper.Multiplayer.GetConnectedPlayers())
-            {
-                if (peer.HasSmapi)
-                {
-                    this.Monitor.Log($"Found player {peer.PlayerID} running Stardew Valley {peer.GameVersion} and SMAPI {peer.ApiVersion} on {peer.Platform} with {peer.Mods} mods.");
-                    if(peer.GetMod("MindMeltMax.PiggyBank") != null)
-                    {
-
-                    }
-                }
-                else
-                    this.Monitor.Log($"Found player {peer.PlayerID} running Stardew Valley without SMAPI.");
-            }*/
-
-            /*foreach(IMultiplayerPeer peer in Helper.Multiplayer.GetConnectedPlayers())
-            {
-                Farmer farmHand = peer as Farmer;
-                Farmer farmOwner = Game1.MasterPlayer;
-
-                List<> farmHandCookingRecipes = farmHand.cookingRecipes;
-
-                if (farmHand.cookingRecipes != farmOwner.cookingRecipes)
-                    farmOwner.cookingRecipes = farmOwner.cookingRecipes;
-            }*/
+            else return;
         }
 
         private void GameLoop_Saving(object sender, SavingEventArgs e)
         {
             if (!Game1.IsMasterGame)
                 return;
-            Helper.Data.WriteSaveData("MindMeltMax.PiggyBank", gold);
+
+            for(int i=0; i<allGold.goldList.Count; i++)
+            {
+                Helper.Data.WriteSaveData("MindMeltMax.PiggyBank-" + i.ToString(), allGold.goldList[i]);
+            }
         }
 
         private void GameLoop_SaveLoaded(object sender, SaveLoadedEventArgs e)
         {
-            if (!Game1.IsMasterGame)
-                return;
-
-            gold = Helper.Data.ReadSaveData<PiggyBankGold>("MindMeltMax.PiggyBank");
-            if(gold == null)
-                gold = new PiggyBankGold();
-
             if (JA != null)
             {
                 var piggyBankID = JA.GetBigCraftableId("Piggy Bank");
@@ -112,6 +161,25 @@ namespace Piggy_Bank_Mod
             responses.Add(new Response("Deposit", i18n.Get("Deposit")));
             responses.Add(new Response("Withdraw", i18n.Get("Withdraw")));
             responses.Add(new Response("Close", i18n.Get("Close")));
+
+            if (!Game1.IsMasterGame)
+                return;
+
+            if (allGold == null)
+            {
+                allGold = new allGold();
+                allGold.goldList = new List<PiggyBankGold>();
+                for(int i=0; i<250; i++)
+                {
+                    var temp = Helper.Data.ReadSaveData<PiggyBankGold>("MindMeltMax.PiggyBank-" + i.ToString());
+                    if (temp != null)
+                        allGold.goldList.Add(temp);
+                    else
+                        break;
+                }
+                if (allGold == null)
+                    allGold.goldList = new List<PiggyBankGold>();
+            }
         }
 
         private void Input_ButtonPressed(object sender, ButtonPressedEventArgs e)
@@ -134,17 +202,32 @@ namespace Piggy_Bank_Mod
 
             else if (clickedObject.Name == "Piggy Bank")
             {
-                openPiggy();
+                if(tile != null)
+                {
+                    foreach (PiggyBankGold gold in allGold.goldList)
+                    {
+                        if (gold.BankTile == tile)
+                            openPiggy(gold.Id);
+                        else continue;
+                    }
+                }
             }
-            else
-                return;
         }
 
-        private bool openPiggy()
+        private bool openPiggy(int id)
         {
-            string text = i18n.Get("Stored") + gold.StoredGold.ToString() + "g.";
-            Game1.currentLocation.createQuestionDialogue(text, responses.ToArray(), piggyBankMenu);
-            return true;
+            foreach (PiggyBankGold gold in allGold.goldList)
+            {
+                if (id == gold.Id)
+                {
+                    string text = i18n.Get("Stored") + gold.StoredGold.ToString() + "g.";
+                    tempGlobalId = id;
+                    Game1.currentLocation.createQuestionDialogue(text, responses.ToArray(), piggyBankMenu);
+                    return true;
+                }
+                else continue;
+            }
+            return false;
         }
 
         private void piggyBankMenu(Farmer who, string key)
@@ -152,25 +235,39 @@ namespace Piggy_Bank_Mod
             if (key == "Close")
                 return;
 
-            string txt = responses.Find(k => k.responseKey == key).responseText;
-            Game1.activeClickableMenu = new NumberSelectionMenu(txt, (nr, cost, farmer) => processRequest(nr, cost, farmer, key), -1, 0, (key != "Withdraw") ? (int)Game1.player.Money : (int)gold.StoredGold);
+            foreach(PiggyBankGold gold in allGold.goldList)
+            {
+                if (gold.Id == tempGlobalId)
+                {
+                    string txt = responses.Find(k => k.responseKey == key).responseText;
+                    Game1.activeClickableMenu = new NumberSelectionMenu(txt, (nr, cost, farmer) => processRequest(nr, cost, farmer, key), -1, 0, (key != "Withdraw") ? (int)who.Money : (int)gold.StoredGold);
+                }
+                else continue;
+            }
         }
 
         private void processRequest(int number, int cost, Farmer who, string key)
         {
-            if(key == "Deposit")
+            foreach(PiggyBankGold gold in allGold.goldList)
             {
-                Game1.player.Money -= number;
-                gold.StoredGold += number;
+                if(gold.Id == tempGlobalId)
+                {
+                    if (key == "Deposit")
+                    {
+                        who.Money -= number;
+                        gold.StoredGold += number;
+                    }
+                    if (key == "Withdraw")
+                    {
+                        who.totalMoneyEarned -= (uint)number;
+                        who.Money += number;
+                        gold.StoredGold -= number;
+
+                    }
+                    Game1.activeClickableMenu = null;
+                    tempGlobalId = -1;
+                }
             }
-            if(key == "Withdraw")
-            {
-                Game1.player.Money += number;
-                Game1.player.totalMoneyEarned -= (uint)number;
-                gold.StoredGold -= number;
-                
-            }
-            Game1.activeClickableMenu = null;
         }
     }
     public interface IJsonAssetsApi //Get The JsonAssets Api functions
