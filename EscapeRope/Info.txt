@@ -1,0 +1,7 @@
+This mod was originally requested by Kissa, who also made the escape rope sprite.
+
+I never intended to release it myself but felt like it should see the light of day in some way.
+
+Inside the release folder you'll find the only build I'll "publish", unless something happens which breaks the mod
+
+Use of the sprite in other mods is prohibited unless permission is given by Kissa

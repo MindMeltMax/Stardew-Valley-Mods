@@ -1,0 +1,10 @@
+{
+    "Name": "Cranberry Popsicle",
+    "Description": "90% Water 8% Fruit 2% Stick",
+    "Price": 250,
+    "Category": "ArtisanGoods",
+    "Edibility": 18,
+    "EdibleIsDrink": false,
+    "Recipe": null,
+    "EdibleBuffs": null
+}

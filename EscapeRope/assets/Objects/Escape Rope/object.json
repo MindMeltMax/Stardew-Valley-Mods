@@ -1,0 +1,11 @@
+{
+	"Name": "Escape Rope",
+	"Price": 100,
+	"Description": "Might come handy in the mines?",
+	"Category": "MonsterLoot",
+	"CategoryTextOverride": "Tool",
+	"CanPurchase": true,
+	"PurchaseRequirements": null,
+	"PurchaseFrom": "Dwarf",
+	"PurchasePrice": 500,
+}

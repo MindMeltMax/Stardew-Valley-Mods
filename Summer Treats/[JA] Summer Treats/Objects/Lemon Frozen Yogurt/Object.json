@@ -1,0 +1,11 @@
+{
+    "Name": "Lemon Frozen Yogurt",
+    "Description": "A favorite summer treat, Warning: sour",
+    "Price": 250,
+    "Category": "ArtisanGoods",
+    "Edibility": 32,
+    "EdibleIsDrink": false,
+    "Recipe": null,
+    "EdibleBuffs": null,
+    "EnableWithMod": "ppja.moretrees"
+}

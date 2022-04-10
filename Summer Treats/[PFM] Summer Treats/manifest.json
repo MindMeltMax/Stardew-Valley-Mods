@@ -1,0 +1,19 @@
+{
+    "Name": "[PFM] Summer Treats",
+    "Author": "MindMeltMax",
+    "Version": "1.1.1",
+    "Description": "Production Rules",
+    "UniqueID": "MindMeltMax.SummerTreatsForProducerFrameworkMod",
+    "MinimumApiVersion": "3.0.0",
+    "UpdateKeys": [],
+    "Dependencies": 
+    [
+        {
+            "UniqueID": "MindMeltMax.SummerTreats"
+        }
+    ],
+    "ContentPackFor": 
+    {
+        "UniqueID": "DIGUS.ProducerFrameworkMod"
+    }
+}

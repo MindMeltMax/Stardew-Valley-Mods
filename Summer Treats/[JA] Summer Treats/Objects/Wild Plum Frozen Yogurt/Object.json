@@ -1,0 +1,10 @@
+{
+    "Name": "Wild Plum Frozen Yogurt",
+    "Description": "A favorite summer treat",
+    "Price": 250,
+    "Category": "ArtisanGoods",
+    "Edibility": 32,
+    "EdibleIsDrink": false,
+    "Recipe": null,
+    "EdibleBuffs": null
+}

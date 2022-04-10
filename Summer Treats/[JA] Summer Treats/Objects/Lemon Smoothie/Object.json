@@ -1,0 +1,11 @@
+{
+    "Name": "Lemon Smoothie",
+    "Description": "Refreshing and healthy, Warning: sour",
+    "Price": 250,
+    "Category": "ArtisanGoods",
+    "Edibility": 25,
+    "EdibleIsDrink": true,
+    "Recipe": null,
+    "EdibleBuffs": null,
+    "EnableWithMod": "ppja.moretrees"
+}

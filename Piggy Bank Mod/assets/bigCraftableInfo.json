@@ -1,0 +1,7 @@
+{
+	"Name": "Piggy Bank",
+	"Price": 500,
+	"Description": "How could this little porcelain pig be so valuable?",
+	"CanPlaceOutdoors": true,
+	"CanPlaceIndoors": true
+}

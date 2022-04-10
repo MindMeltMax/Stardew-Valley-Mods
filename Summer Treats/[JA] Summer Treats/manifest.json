@@ -1,0 +1,12 @@
+{
+    "Name": "[JA] Summer Treats",
+    "Author": "MindMeltMax",
+    "Description": "Adds an assortment of desserts to give some more life to summer",
+    "Version": "1.1.1",
+    "UniqueID": "MindMeltMax.SummerTreats",
+    "UpdateKeys": ["Nexus:6558"],
+    "ContentPackFor": 
+    {
+        "UniqueID": "spacechase0.JsonAssets"
+    }
+}
