@@ -169,11 +169,12 @@ namespace BetterShipping
             }
             else if (inventory.isWithinBounds(x, y))
             {
-                var item = inventory.rightClick(x, y, heldItem, false);
+                var item = inventory.getItemAt(x, y);
+                if (item == null || !Utility.highlightShippableObjects(item)) return;
                 if (item != null && heldItem == null)
                 {
                     selectSingleFromInventory(item, Game1.player);
-                    addItemToBin(item, Game1.player);
+                    addItemToBin(item.getOne(), Game1.player);
                     loadItemsInView();
                     broadCastToMultiplayer();
                     Game1.playSound("Ship");
@@ -185,7 +186,7 @@ namespace BetterShipping
                     if (Game1.player.getIndexOfInventoryItem(heldItem) >= 0)
                         Game1.player.addItemToInventory(heldItem.getOne(), Game1.player.getIndexOfInventoryItem(heldItem));
                     else
-                        Game1.player.addItemToInventory(heldItem);
+                        Game1.player.addItemToInventory(heldItem.getOne());
                     heldItem.Stack--;
                     if (heldItem.Stack <= 0)
                         heldItem = null;
@@ -558,7 +559,9 @@ namespace BetterShipping
             if (i == null || who == null) return;
 
             var index = who.getIndexOfInventoryItem(i);
-            who.removeItemsFromInventory(index, 1);
+            who.Items[index].Stack--;
+            if (who.Items[index].Stack <= 0)
+                who.removeItemFromInventory(i);
         }
 
         //I'm keeping this, if selectStackFromBin ever throws anything funny I don't want to understand it's getting yeeted and this gets re-implemented
