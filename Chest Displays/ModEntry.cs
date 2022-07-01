@@ -25,8 +25,6 @@ namespace Chest_Displays
 
         public bool host = false;
 
-        public readonly string kut = "vagina";
-
         public static List<SaveData> SavedData = new List<SaveData>();
 
         public override void Entry(IModHelper helper)
