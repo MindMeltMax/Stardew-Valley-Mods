@@ -37,6 +37,8 @@ namespace BetterShipping
         private static readonly IModHelper Helper = ModEntry.IHelper;
         private static readonly IMonitor Monitor = ModEntry.IMonitor;
 
+        private static readonly Location islandBinPosition = new Location(90, 39);
+
         public static void doActionPostfix(Vector2 tileLocation, Farmer who)
         {
             try
@@ -51,10 +53,11 @@ namespace BetterShipping
         {
             try
             {
-                if (Game1.activeClickableMenu is not null and ItemGrabMenu)
-                    Game1.activeClickableMenu = new BinMenuOverride(Helper, Monitor);
+                if ((tileLocation.X >= islandBinPosition.X || tileLocation.X <= islandBinPosition.X + 1) && (tileLocation.Y == islandBinPosition.Y || tileLocation.Y >= islandBinPosition.Y - 1))
+                    if (Game1.activeClickableMenu is not null and ItemGrabMenu)
+                        Game1.activeClickableMenu = new BinMenuOverride(Helper, Monitor);
             }
-            catch(Exception ex) { Monitor.Log($"Failed to patch ShippingBin.checkAction", LogLevel.Error); Monitor.Log($"{ex} - {ex.Message}"); return; }
+            catch(Exception ex) { Monitor.Log($"Failed to patch IslandWest.checkAction", LogLevel.Error); Monitor.Log($"{ex} - {ex.Message}"); return; }
         }
     }
 }

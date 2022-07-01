@@ -23,15 +23,15 @@ namespace BetterShipping
         private void OnModMessageReceived(object? sender, ModMessageReceivedEventArgs e)
         {
             if (e.Type == "reloadItemsInBin")
-                if (Game1.activeClickableMenu is not null and BinMenuOverride)
-                    (Game1.activeClickableMenu as BinMenuOverride).loadItemsInView();
+                if (Game1.activeClickableMenu is not null and BinMenuOverride menu)
+                    menu.loadItemsInView();
         }
 
         private void OnResize(object? sender, WindowResizedEventArgs e)
         {
-            if (Game1.activeClickableMenu is not null and BinMenuOverride)
+            if (Game1.activeClickableMenu is not null and BinMenuOverride menu)
             {
-                var offset = (Game1.activeClickableMenu as BinMenuOverride).Offset;
+                var offset = menu.Offset;
                 Game1.activeClickableMenu = new BinMenuOverride(Helper, Monitor, offset);
             }
         }
