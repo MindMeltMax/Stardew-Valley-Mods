@@ -72,6 +72,9 @@ namespace Fishnets
 
         private void onDayStarted(object sender, DayStartedEventArgs e)
         {
+            if (Game1.player.FishingLevel >= 6 && !Game1.player.knowsRecipe("Fish Net"))
+                Game1.player.craftingRecipes.Add("Fish Net", 0);
+
             if (!Context.IsMainPlayer) return;
 
             foreach (var l in Game1.locations)
