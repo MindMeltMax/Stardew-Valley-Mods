@@ -119,7 +119,7 @@ namespace Fishnets
                 e.Edit(asset =>
                 {
                     var data = asset.AsDictionary<string, string>().Data;
-                    data["Fish Net"] = $"335 3 771 50/Field/{FishNetId}/false/Fishing 6";
+                    data["Fish Net"] = $"335 3 771 30/Field/{FishNetId}/false/Fishing 6";
                 }, AssetEditPriority.Late);
             }
 

@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Netcode;
+using StardewModdingAPI;
 using StardewValley;
 using System;
 using System.Collections.Generic;
@@ -78,7 +79,7 @@ namespace Fishnets
             List<Vector2> tiles = new List<Vector2>();
             if ((double)directionOffset.Y < 0.0)
                 addOverlayTilesIfNecessary(location, (int)TileLocation.X, (int)TileLocation.Y, tiles);
-            this.addOverlayTilesIfNecessary(location, (int)TileLocation.X, (int)TileLocation.Y + 1, tiles);
+            addOverlayTilesIfNecessary(location, (int)TileLocation.X, (int)TileLocation.Y + 1, tiles);
             if ((double)directionOffset.X < 0.0)
                 addOverlayTilesIfNecessary(location, (int)TileLocation.X - 1, (int)TileLocation.Y + 1, tiles);
             if ((double)directionOffset.X > 0.0)
@@ -133,7 +134,7 @@ namespace Fishnets
         {
             Vector2 tile = new Vector2(x, y);
             bool flag = location.doesTileHaveProperty(x + 1, y, "Water", "Back") != null && location.doesTileHaveProperty(x - 1, y, "Water", "Back") != null || location.doesTileHaveProperty(x, y + 1, "Water", "Back") != null && location.doesTileHaveProperty(x, y - 1, "Water", "Back") != null;
-            return !location.objects.ContainsKey(tile) && flag && (location.doesTileHaveProperty((int)tile.X, (int)tile.Y, "Water", "Back") != null && location.doesTileHaveProperty((int)tile.X, (int)tile.Y, "Passable", "Buildings") == null);
+            return !location.Objects.ContainsKey(tile) && !location.Objects.ContainsKey(new Vector2(tile.X + .5f, tile.Y + .5f)) && flag && (location.doesTileHaveProperty(x, y, "Water", "Back") != null && location.doesTileHaveProperty(x, y, "Passable", "Buildings") == null);
         }
 
         public override bool canBePlacedInWater() => true;
@@ -144,6 +145,14 @@ namespace Fishnets
             o._GetOneFrom(this);
             return o;
         }
+
+        public override bool canBeShipped() => false;
+
+        public override bool canBeTrashed() => true;
+
+        public override bool canBeDropped() => true;
+
+        public override bool canBeGivenAsGift() => false;
 
         public override void actionOnPlayerEntry()
         {
@@ -156,10 +165,10 @@ namespace Fishnets
         {
             if (who != null)
                 owner.Value = who.UniqueMultiplayerID;
-            if (!IsValidPlacementLocation(location, x / 64, y / 64))
+            if (!IsValidPlacementLocation(location, (int)Math.Floor(x / 64f), (int)Math.Floor(y / 64f)))
                 return false;
-            TileLocation = new Vector2(x / 64f, y / 64f);
-            location.objects.Add(TileLocation, this);
+            TileLocation = new Vector2((int)Math.Floor(x / 64f), (int)Math.Floor(y / 64f));
+            location.Objects.Add(TileLocation, this);
             location.playSound("waterSlosh");
             DelayedAction.playSoundAfterDelay("slosh", 150);
             addOverlayTiles(location);
@@ -215,7 +224,7 @@ namespace Fishnets
                         if (who.isMoving())
                             Game1.haltAfterCheck = false;
                         Game1.playSound("coin");
-                        Game1.currentLocation.objects.Remove(TileLocation);
+                        who.currentLocation.Objects.Remove(TileLocation);
                         return true;
                     }
                     else
