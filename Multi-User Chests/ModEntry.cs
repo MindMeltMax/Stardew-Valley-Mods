@@ -1,4 +1,5 @@
-﻿using Netcode;
+﻿using Microsoft.Xna.Framework;
+using Netcode;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -23,9 +24,13 @@ namespace Multi_User_Chest
         {
             if (!Context.IsMultiplayer || Game1.getOnlineFarmers().Count <= 1 || Game1.activeClickableMenu != null) return;
 
-            if (SButtonExtensions.IsActionButton(e.Button))
+            if (e.Button.IsActionButton())
             {
-                var tile = e.Cursor.Tile;
+                Vector2 tile = e.Cursor.GrabTile;
+
+                if (Helper.ModRegistry.IsLoaded("spacechase0.ExtendedReach")) 
+                    tile = e.Cursor.Tile;
+
                 var OatT = Game1.currentLocation.getObjectAtTile((int)tile.X, (int)tile.Y);
 
                 if (OatT is not null and Chest c && c.playerChest.Value)

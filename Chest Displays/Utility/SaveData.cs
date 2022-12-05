@@ -1,7 +1,10 @@
-﻿using StardewValley;
+﻿using Microsoft.Xna.Framework;
+using StardewValley;
+using System;
 
 namespace Chest_Displays.Utility
 {
+    [Obsolete("Replacing with ModData")]
     public class SaveData
     {
         public string Item { get; set; }
@@ -10,10 +13,11 @@ namespace Chest_Displays.Utility
         public int X { get; set; }
         public int Y { get; set; }
         public string Location { get; set; }
+        public int ItemType { get; set; }
 
         public SaveData() { }
 
-        public SaveData(string item, string descript, int quality, int x, int y, string location)
+        public SaveData(string item, string descript, int quality, int x, int y, string location, int itemType = -1)
         {
             Item = item;
             ItemDescription = descript;
@@ -21,6 +25,20 @@ namespace Chest_Displays.Utility
             X = x;
             Y = y;
             Location = location;
+            ItemType = itemType;
         }
+    }
+
+    public class ModData
+    {
+        public string Item { get; set; }
+
+        public int ItemQuality { get; set; }
+
+        public int ItemType { get; set; }
+
+        public int UpgradeLevel { get; set; }
+
+        public Color? Color { get; set; }
     }
 }
