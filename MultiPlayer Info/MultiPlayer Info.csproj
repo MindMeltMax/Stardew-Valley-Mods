@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>MPInfo</RootNamespace>
+    <LangVersion>Latest</LangVersion>
+    <Nullable>Enable</Nullable>
+    <AssemblyName>MPInfo</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.0.2" />
+  </ItemGroup>
+
+</Project>
