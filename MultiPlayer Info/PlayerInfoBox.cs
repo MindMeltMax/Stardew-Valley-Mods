@@ -46,6 +46,8 @@ namespace MPInfo
 
         public Rectangle SourceRectIconBackground => new(293, 360, 24, 24);
 
+        public Rectangle SourceRectIconBackgroundSelf => new(163, 399, 24, 24);
+
         public Rectangle[] SourceRectInfoDisplay => new[]
         {
             new Rectangle(317, 361, 3, 22), //Left
@@ -89,15 +91,10 @@ namespace MPInfo
         {
             base.performHoverAction(x, y);
             if (new Rectangle(X, Y, 96, 96).Contains(x, y))
-                hoverText = $"{Who.Name}{(Game1.serverHost.Value.UniqueMultiplayerID == id ? " (Host)" : "")}";
+                hoverText = $"{Who.Name}{(Game1.player.UniqueMultiplayerID == id ? " (Me)" : (Game1.serverHost.Value.UniqueMultiplayerID == id ? " (Host)" : ""))}";
         }
 
-        public override void receiveLeftClick(int x, int y, bool playSound = true)
-        {
-            base.receiveLeftClick(x, y, playSound);
-            if (new Rectangle(X, Y, 96, 96).Contains(x, y))
-                Who.takeDamage(5, false, new Ghost());
-        }
+        //There was debug code here I forgot to take out...
 
         public override void gameWindowSizeChanged(Rectangle oldBounds, Rectangle newBounds)
         {
@@ -108,7 +105,10 @@ namespace MPInfo
         public override void draw(SpriteBatch b)
         {
             base.draw(b);
-            b.Draw(Texture, new(X, Y), SourceRectIconBackground, Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.88f);
+            if (Who == Game1.player)
+                b.Draw(Texture, new(X, Y), SourceRectIconBackgroundSelf, Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.88f);
+            else
+                b.Draw(Texture, new(X, Y), SourceRectIconBackground, Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.88f);
             b.Draw(Texture, new(X + 96, Y + 4), SourceRectInfoDisplay[0], Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.88f);
             b.Draw(Texture, new(X + 96 + 12, Y + 4), SourceRectInfoDisplay[1], Color.White, 0.0f, Vector2.Zero, new Vector2(56f, 4f), SpriteEffects.None, 0.88f);
             b.Draw(Texture, new(X + 96 + 12 + 112, Y + 4), SourceRectInfoDisplay[2], Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.88f);

@@ -15,6 +15,7 @@ namespace MPInfo
     {
         internal static IModHelper IHelper;
         internal static IMonitor IMonitor;
+        internal static Config IConfig;
 
         private int lastMaxHealth;
         private int lastHealth;
@@ -23,12 +24,13 @@ namespace MPInfo
         {
             IHelper = Helper;
             IMonitor = Monitor;
+            IConfig = Helper.ReadConfig<Config>();
 
             Helper.Events.Multiplayer.PeerConnected += onPlayerJoin;
             Helper.Events.Multiplayer.PeerDisconnected += onPlayerLeave;
             Helper.Events.Multiplayer.ModMessageReceived += onMultiplayerDataReceived;
 
-            Helper.Events.GameLoop.SaveLoaded += (s, e) => { lastHealth = Game1.player.health; lastMaxHealth = Game1.player.maxHealth; ResetDisplays(); UpdatePositions(); };
+            Helper.Events.GameLoop.SaveLoaded += (s, e) => { lastHealth = Game1.player.health; lastMaxHealth = Game1.player.maxHealth; ResetDisplays(); };
             Helper.Events.GameLoop.UpdateTicked += (s, e) => checkMyHealth();
         }
 
@@ -54,7 +56,7 @@ namespace MPInfo
             int playerIndex = 0;
             foreach (var player in Game1.getOnlineFarmers())
             {
-                if (player == Game1.player)
+                if (player == Game1.player && !IConfig.ShowSelf)
                     continue;
 
                 int index = offsetIndex;
@@ -100,7 +102,7 @@ namespace MPInfo
         }
         private void onMultiplayerDataReceived(object? sender, ModMessageReceivedEventArgs e)
         {
-            if (e.FromModID == Helper.ModRegistry.ModID && e.FromPlayerID != Game1.player.UniqueMultiplayerID)
+            if (e.FromModID == Helper.ModRegistry.ModID)
             {
                 if (e.Type == "MPInfo.Health")
                 {
