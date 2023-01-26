@@ -2,4 +2,7 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/MultiPlayer Info/obj/Release/net5.0
+/.vs
+/MultiPlayer Info/.vs
+/MultiPlayer Info/bin
+/MultiPlayer Info/obj
