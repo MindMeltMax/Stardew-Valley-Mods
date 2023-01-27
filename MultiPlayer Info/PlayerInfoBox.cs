@@ -39,11 +39,9 @@ namespace MPInfo {
         private readonly Config Config;
         private string hoverText = "";
 
-        public PlayerInfoBox(int x, int y, Farmer who, Config config) {
+        public PlayerInfoBox(Farmer who, Config config) {
             this.Who = who;
             this.Config = config;
-            this.xPositionOnScreen = x;
-            this.yPositionOnScreen = y;
             this.width = 96 + 12 + 112 + 28;
             this.height = 96;
         }
@@ -55,31 +53,21 @@ namespace MPInfo {
         }
 
         public override void gameWindowSizeChanged(Rectangle oldBounds, Rectangle newBounds) {
-            if (oldBounds != newBounds) {
-                Debounce(() => {
-                    int index = 0;
-                    foreach (var pib in Game1.onScreenMenus.Where(x => x is PlayerInfoBox).OfType<PlayerInfoBox>()) {
-                        pib.xPositionOnScreen = 32;
-                        pib.yPositionOnScreen = (Game1.uiViewport.Height - 32 - 96) - (112 * index);
-                        index++;
-                    }
-                });
-            }
+            if (oldBounds != newBounds)
+                RedrawAll();
         }
 
-        private static Action Debounce(Action func, int milliseconds = 300) {
-            CancellationTokenSource? cancelTokenSource = null;
+        public void Redraw(int index) {
+            this.xPositionOnScreen = 32;
+            this.yPositionOnScreen = (Game1.graphics.GraphicsDevice.Viewport.Height - 32 - 96) - (112 * index);
+        }
 
-            return () => {
-                cancelTokenSource?.Cancel();
-                cancelTokenSource = new CancellationTokenSource();
-                Task.Delay(milliseconds, cancelTokenSource.Token)
-                    .ContinueWith(t => {
-                        if (t.IsCompletedSuccessfully) {
-                            func();
-                        }
-                    }, TaskScheduler.Default);
-            };
+        public static void RedrawAll() {
+            var index = 0;
+            foreach (var pib in Game1.onScreenMenus.Where(x => x is PlayerInfoBox).OfType<PlayerInfoBox>()) {
+                pib.Redraw(index);
+                index++;
+            }
         }
 
         public override void draw(SpriteBatch b) {
@@ -87,7 +75,7 @@ namespace MPInfo {
                 return;
 
             base.draw(b);
-            var yPositionOnScreen = 0;
+
             b.Draw(Texture, new(xPositionOnScreen, yPositionOnScreen), Who == Game1.player ? SourceRectIconBackgroundSelf : SourceRectIconBackground, Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.88f);
             b.Draw(Texture, new(xPositionOnScreen + 96, yPositionOnScreen + 4), SourceRectInfoDisplay[0], Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.88f);
             b.Draw(Texture, new(xPositionOnScreen + 96 + 12, yPositionOnScreen + 4), SourceRectInfoDisplay[1], Color.White, 0.0f, Vector2.Zero, new Vector2(56f, 4f), SpriteEffects.None, 0.88f);

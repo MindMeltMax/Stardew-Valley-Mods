@@ -5,8 +5,12 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 
 namespace MPInfo {
-    internal static class Patches {
-        public static void Apply(string uniqueId) {
+    internal class Patches {
+        private static Config Config = null!;
+
+        public Patches(Config config) => Config = config;
+
+        public void Apply(string uniqueId) {
             var harmony = new Harmony(uniqueId);
             harmony.Patch(
                 // 0: Link into Game1.drawHUD() since that is where health and stamina is drawn
@@ -18,7 +22,7 @@ namespace MPInfo {
         private static int Replacement_Right() {
             var r = Game1.graphics.GraphicsDevice.Viewport.GetTitleSafeArea().Right;
             // 5: If hiding bars, double the "Right" value to push drawing off the screen
-            return ModEntry.Config.Enabled && ModEntry.Config.HideHealthBars ? r + r : r;
+            return Config.Enabled && Config.HideHealthBars ? r + r : r;
         }
 
         public static IEnumerable<CodeInstruction> Transpile_Game1_drawHUD(IEnumerable<CodeInstruction> instructions) {
