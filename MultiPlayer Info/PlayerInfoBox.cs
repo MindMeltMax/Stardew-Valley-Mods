@@ -57,21 +57,21 @@ namespace MPInfo {
                 RedrawAll();
         }
 
-        public void Redraw(int index) {
-            this.xPositionOnScreen = 32;
-            this.yPositionOnScreen = (Game1.graphics.GraphicsDevice.Viewport.Height - 32 - 96) - (112 * index);
+        public bool Visible() {
+            return this.Config.Enabled && (this.Config.ShowSelf || Who.UniqueMultiplayerID != Game1.player.UniqueMultiplayerID);
         }
 
         public static void RedrawAll() {
             var index = 0;
-            foreach (var pib in Game1.onScreenMenus.Where(x => x is PlayerInfoBox).OfType<PlayerInfoBox>()) {
-                pib.Redraw(index);
+            foreach (var pib in Game1.onScreenMenus.Where(x => (x as PlayerInfoBox)?.Visible() ?? false).OfType<PlayerInfoBox>()) {
+                pib.xPositionOnScreen = 32;
+                pib.yPositionOnScreen = (Game1.graphics.GraphicsDevice.Viewport.Height - 32 - 96) - (112 * index);
                 index++;
             }
         }
 
         public override void draw(SpriteBatch b) {
-            if (!this.Config.Enabled || (!this.Config.ShowSelf && Who.UniqueMultiplayerID == Game1.player.UniqueMultiplayerID))
+            if (!this.Visible())
                 return;
 
             base.draw(b);

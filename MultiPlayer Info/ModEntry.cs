@@ -58,14 +58,20 @@ namespace MPInfo {
                 name: () => "Enabled",
                 tooltip: () => "",
                 getValue: () => Config.Enabled,
-                setValue: value => Config.Enabled = value
+                setValue: value => {
+                    Config.Enabled = value;
+                    PlayerInfoBox.RedrawAll();
+                }
             );
             configMenu.AddBoolOption(
                 mod: this.ModManifest,
                 name: () => "Show Self",
                 tooltip: () => "",
                 getValue: () => Config.ShowSelf,
-                setValue: value => Config.ShowSelf = value
+                setValue: value => {
+                    Config.ShowSelf = value;
+                    PlayerInfoBox.RedrawAll();
+                }
             );
             configMenu.AddBoolOption(
                 mod: this.ModManifest,
