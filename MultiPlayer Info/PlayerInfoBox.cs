@@ -3,9 +3,6 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 using StardewValley.Menus;
 using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MPInfo 
 {
@@ -15,30 +12,29 @@ namespace MPInfo
 
         public static Texture2D? Crown { get; set; }
 
-        private Texture2D Texture => Game1.mouseCursors;
-        private Rectangle SourceRectIconBackground => new(293, 360, 24, 24);
-        private Rectangle SourceRectIconBackgroundSelf => new(163, 399, 24, 24);
+        private static Texture2D Texture => Game1.mouseCursors;
+        private static Rectangle SourceRectIconBackground => new(293, 360, 24, 24);
+        private static Rectangle SourceRectIconBackgroundSelf => new(163, 399, 24, 24);
 
-        private Rectangle[] SourceRectInfoDisplay => new[]
+        private static Rectangle[] SourceRectInfoDisplay => new[]
         {
             new Rectangle(317, 361, 3, 22), //Left
             new Rectangle(320, 361, 2, 22), //Middle (Expands based on given info)
             new Rectangle(322, 361, 7, 22)  //Right
         };
 
-        private Rectangle[] SourceRectIconPassOut => new[]
+        private static Rectangle[] SourceRectIconPassOut => new[]
         {
             new Rectangle(195, 408, 4, 8), //Vertical
             new Rectangle(193, 410, 8, 4), //Horizontal
             new Rectangle(194, 409, 1, 1)  //Corner
         };
 
-        private Rectangle SourceRectIconEnergy => new(0, 428, 10, 10);
-        private Rectangle SourceRectIconHealth => new(0, 438, 10, 10);
-        private Rectangle SourceRectIconSkull => new(140, 428, 10, 10);
-        private Rectangle SourceRectIconCrown => new(0, 0, 9, 7);
+        private static Rectangle SourceRectIconEnergy => new(0, 428, 10, 10);
+        private static Rectangle SourceRectIconHealth => new(0, 438, 10, 10);
+        private static Rectangle SourceRectIconSkull => new(140, 428, 10, 10);
+        private static Rectangle SourceRectIconCrown => new(0, 0, 9, 7);
 
-        private Config Config => ModEntry.Config;
         private string hoverText = "";
 
         public PlayerInfoBox(Farmer who) 
@@ -55,26 +51,9 @@ namespace MPInfo
                 hoverText = $"{Who.Name}{(Game1.player.UniqueMultiplayerID == Who.UniqueMultiplayerID ? " (Me)" : (Game1.serverHost.Value.UniqueMultiplayerID == Who.UniqueMultiplayerID ? " (Host)" : ""))}";
         }
 
-        public override void gameWindowSizeChanged(Rectangle oldBounds, Rectangle newBounds) 
-        {
-            if (oldBounds != newBounds)
-                RedrawAll();
-        }
+        public bool Visible() => ModEntry.Config.Enabled && (ModEntry.Config.ShowSelf || Who.UniqueMultiplayerID != Game1.player.UniqueMultiplayerID);
 
-        public bool Visible() => Config.Enabled && (Config.ShowSelf || Who.UniqueMultiplayerID != Game1.player.UniqueMultiplayerID);
-
-        public static void RedrawAll() 
-        {
-            var index = 0;
-            foreach (var pib in Game1.onScreenMenus.Where(x => (x as PlayerInfoBox)?.Visible() ?? false).OfType<PlayerInfoBox>()) 
-            {
-                pib.xPositionOnScreen = 32;
-                pib.yPositionOnScreen = (Game1.graphics.GraphicsDevice.Viewport.Height - 32 - 96) - (112 * index);
-                index++;
-            }
-        }
-
-        public override void draw(SpriteBatch b) 
+        public override void draw(SpriteBatch b)
         {
             if (!Visible())
                 return;
@@ -102,7 +81,7 @@ namespace MPInfo
                     for (int j = 0; j < 2; j++)
                         b.Draw(Texture, new(xPositionOnScreen + 36 + (20 * j), yPositionOnScreen + 43 + (20 * i)), SourceRectIconPassOut[2], Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.9f);
             }
-            if (Config.ShowHostCrown && Crown is not null && Game1.MasterPlayer.UniqueMultiplayerID == Who.UniqueMultiplayerID)
+            if (ModEntry.Config.ShowHostCrown && Crown is not null && Game1.MasterPlayer.UniqueMultiplayerID == Who.UniqueMultiplayerID)
                 b.Draw(Crown, new(xPositionOnScreen - 16, yPositionOnScreen + 16), SourceRectIconCrown, Color.White, -.8f, Vector2.Zero, 4f, SpriteEffects.None, 0.91f);
             FarmerRenderer.isDrawingForUI = false;
 
