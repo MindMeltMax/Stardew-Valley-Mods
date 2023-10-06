@@ -1,21 +1,16 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Netcode;
-using StardewModdingAPI;
 using StardewValley;
+using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
-using xTile.Tiles;
-using Object = StardewValley.Object;
 
-namespace Fishnets
+namespace Fishnets.Data
 {
-    public class FishNet : Object
+    public class Fishnet : Object
     {
         private float yBob;
         [XmlElement("directionOffset")]
@@ -23,78 +18,39 @@ namespace Fishnets
         [XmlElement("bait")]
         public readonly NetRef<Object> bait = new();
 
+        public static Texture2D Texture => ModEntry.IHelper.ModContent.Load<Texture2D>("assets/FishNet.png");
+
+        public static Rectangle SourceRect => new(0, 0, 16, 16);
+
         private readonly int[] Qualities = new[] { lowQuality, medQuality, highQuality, bestQuality };
 
-        public class FishNetSerializable
+        public Fishnet() : base(Vector2.Zero, ModEntry.ObjectInfo.Id, "Fish Net", true, false, false, false) { }
+
+        public Fishnet(Vector2 tileLocation, int stack = 1) : this()
         {
-            public long Owner { get; set; } = 0L;
-
-            public int Bait { get; set; } = -1;
-
-            public int BaitQuality { get; set; } = 0;
-
-            public string ObjectName { get; set; } = "";
-
-            public int ObjectId { get; set; } = -1;
-
-            public int ObjectStack { get; set; } = -1;
-
-            public int ObjectQuality { get; set; } = 0;
-
-            public bool IsJAObject { get; set; } = false;
-
-            public bool IsDGAObject { get; set; } = false;
-
-            public Vector2 Tile { get; set; }
-
-            public FishNetSerializable() { }
-
-            public FishNetSerializable(FishNet f) 
-            {
-                Owner = f.owner.Value;
-                if (f.bait.Value is not null)
-                {
-                    Bait = f.bait.Value.ParentSheetIndex;
-                    BaitQuality = f.bait.Value.Quality;
-                }
-                if (f.heldObject.Value is not null)
-                {
-                    ObjectName = f.heldObject.Value.Name;
-                    ObjectId = f.heldObject.Value.ParentSheetIndex;
-                    ObjectStack = f.heldObject.Value.Stack;
-                    ObjectQuality = f.heldObject.Value.Quality;
-                    //Don't know if this works, hope so ¯\_(ツ)_/¯
-                    if (ModEntry.HasJsonAssets)
-                        IsJAObject = ModEntry.IJsonAssetsApi.GetObjectId(ObjectName) != -1;
-                    if (ModEntry.HasDynamicGameAssets)
-                        IsDGAObject = ModEntry.IDynamicGameAssetsApi.GetDGAItemId(f.heldObject.Value) is not null;
-
-                    if (IsDGAObject)
-                        ObjectName = ModEntry.IDynamicGameAssetsApi.GetDGAItemId(f.heldObject.Value);
-                }
-                Tile = f.TileLocation;
-            }
-        }
-
-        protected override void initNetFields()
-        {
-            base.initNetFields();
-            NetFields.AddFields(directionOffset, bait);
-        }
-
-        public FishNet() { }
-
-        public FishNet(Vector2 tileLocation, int stack = 1) : base(tileLocation, ModEntry.FishNetId, "Fish Net", true, false, false, false)
-        {
+            TileLocation = tileLocation;
             Type = "interactive";
             Stack = stack;
         }
 
-        protected void addOverlayTilesIfNecessary( GameLocation location, int x, int y, List<Vector2> tiles)
+        private void drawDefault(SpriteBatch spriteBatch, int x, int y, float alpha = 1) => spriteBatch.Draw(Texture, Game1.GlobalToLocal(Game1.viewport, directionOffset + new Vector2(x * 64f, y * 64f + yBob)), SourceRect, Color.White * alpha, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, ((y * 64f) + directionOffset.Y + (x % 4)) / 10000.0f);
+
+        private Rectangle getSourceRectForQuality(int quality)
+        {
+            return quality switch
+            {
+                medQuality => new(338, 400, 8, 8),
+                highQuality => new(346, 400, 8, 8),
+                bestQuality => new(346, 392, 8, 8),
+                _ => new(338, 392, 8, 8)
+            };
+        }
+
+        protected void addOverlayTilesIfNecessary(GameLocation location, int x, int y, List<Vector2> tiles)
         {
             if (location != Game1.currentLocation || location.getTileIndexAt(x, y, "Buildings") < 0 || location.doesTileHaveProperty(x, y + 1, "Back", "Water") != null)
                 return;
-            tiles.Add(new Vector2(x, y));
+            tiles.Add(new(x, y));
         }
 
         protected bool checkLocation(GameLocation location, float x, float y) => location.doesTileHaveProperty((int)x, (int)y, "Water", "Back") == null || location.doesTileHaveProperty((int)x, (int)y, "Passable", "Buildings") != null;
@@ -104,12 +60,12 @@ namespace Fishnets
         public List<Vector2> getOverlayTiles(GameLocation location)
         {
             List<Vector2> tiles = new();
-            if ((double)directionOffset.Y < 0.0)
+            if (directionOffset.Y < 0f)
                 addOverlayTilesIfNecessary(location, (int)TileLocation.X, (int)TileLocation.Y, tiles);
             addOverlayTilesIfNecessary(location, (int)TileLocation.X, (int)TileLocation.Y + 1, tiles);
-            if ((double)directionOffset.X < 0.0)
+            if (directionOffset.X < 0f)
                 addOverlayTilesIfNecessary(location, (int)TileLocation.X - 1, (int)TileLocation.Y + 1, tiles);
-            if ((double)directionOffset.X > 0.0)
+            if (directionOffset.X > 0f)
                 addOverlayTilesIfNecessary(location, (int)TileLocation.X + 1, (int)TileLocation.Y + 1, tiles);
             return tiles;
         }
@@ -146,9 +102,9 @@ namespace Fishnets
             Vector2 zero = Vector2.Zero;
             if (checkLocation(location, TileLocation.X - 1f, TileLocation.Y))
                 zero += new Vector2(32f, 0f);
-            if (checkLocation(location, tileLocation.X + 1f, TileLocation.Y))
+            if (checkLocation(location, TileLocation.X + 1f, TileLocation.Y))
                 zero += new Vector2(-32f, 0f);
-            if (zero.X != 0.0f && checkLocation(location, TileLocation.X + (float)Math.Sign(zero.X), TileLocation.Y + 1f))
+            if (zero.X != 0.0f && checkLocation(location, TileLocation.X + Math.Sign(zero.X), TileLocation.Y + 1f))
                 zero += new Vector2(0.0f, -42f);
             if (checkLocation(location, TileLocation.X, TileLocation.Y - 1f))
                 zero += new Vector2(0.0f, 32f);
@@ -164,22 +120,32 @@ namespace Fishnets
             return !location.Objects.ContainsKey(tile) && !location.Objects.ContainsKey(new Vector2(tile.X + .5f, tile.Y + .5f)) && flag && (location.doesTileHaveProperty(x, y, "Water", "Back") != null && location.doesTileHaveProperty(x, y, "Passable", "Buildings") == null);
         }
 
-        public override bool canBePlacedInWater() => true;
+        protected override void initNetFields()
+        {
+            base.initNetFields();
+            NetFields.AddFields(directionOffset, bait);
+        }
 
         public override Item getOne()
         {
-            Object o = new(ParentSheetIndex, 1);
+            Fishnet o = new();
             o._GetOneFrom(this);
-            return o;
+            return (Object)o;
         }
 
-        public override bool canBeShipped() => false;
+        public override bool isPlaceable() => true;
+
+        public override bool canBePlacedInWater() => true;
+
+        public override bool canBePlacedHere(GameLocation l, Vector2 tile) => IsValidPlacementLocation(l, (int)tile.X, (int)tile.Y);
 
         public override bool canBeTrashed() => true;
 
         public override bool canBeDropped() => true;
 
         public override bool canBeGivenAsGift() => false;
+
+        public override bool canBeShipped() => false;
 
         public override void actionOnPlayerEntry()
         {
@@ -198,14 +164,14 @@ namespace Fishnets
             location.Objects.Add(TileLocation, this);
             location.playSound("waterSlosh");
             DelayedAction.playSoundAfterDelay("slosh", 150);
-            addOverlayTiles(location);
             updateOffset(location);
+            addOverlayTiles(location);
             return true;
         }
 
         public override bool performObjectDropInAction(Item dropInItem, bool probe, Farmer who)
         {
-            if (dropInItem is not Object o || o.Category != -21 || (bait.Value != null || who.professions.Contains(11)))
+            if (dropInItem is not Object o || o.Category != -21 || bait.Value != null || who.professions.Contains(11))
                 return false;
             if (!probe)
             {
@@ -215,6 +181,13 @@ namespace Fishnets
             return true;
         }
 
+        public override void performRemoveAction(Vector2 tileLocation, GameLocation environment)
+        {
+            removeOverlayTiles(environment);
+            bait.Value = null;
+            base.performRemoveAction(tileLocation, environment);
+        }
+
         public override bool checkForAction(Farmer who, bool justCheckingForActivity = false)
         {
             if (heldObject.Value is not null)
@@ -222,13 +195,12 @@ namespace Fishnets
                 if (justCheckingForActivity)
                     return true;
                 Object o = heldObject.Value;
-                heldObject.Value = null;
                 if (who.IsLocalPlayer && !who.addItemToInventoryBool(o))
                 {
-                    heldObject.Value = o;
                     Game1.showRedMessage(Game1.content.LoadString("Strings\\StringsFromCSFiles:Crop.cs.588"));
                     return false;
                 }
+                heldObject.Value = null;
                 Dictionary<int, string> fishData = Game1.content.Load<Dictionary<int, string>>("Data\\Fish");
                 if (fishData.ContainsKey(o.ParentSheetIndex))
                     who.caughtFish(o.ParentSheetIndex, -1);
@@ -246,7 +218,7 @@ namespace Fishnets
                     return true;
                 if (Game1.didPlayerJustClickAtAll(true))
                 {
-                    if (Game1.player.addItemToInventoryBool(getOne()))
+                    if (who.addItemToInventoryBool(getOne()))
                     {
                         if (who.isMoving())
                             Game1.haltAfterCheck = false;
@@ -262,10 +234,11 @@ namespace Fishnets
             return false;
         }
 
-        public override void performRemoveAction(Vector2 tileLocation, GameLocation environment)
+        public override void dropItem(GameLocation location, Vector2 origin, Vector2 destination)
         {
-            removeOverlayTiles(environment);
-            base.performRemoveAction(tileLocation, environment);
+            if (fragility == 2)
+                return;
+            location.debris.Add(new(this, origin, destination));
         }
 
         public override void DayUpdate(GameLocation location)
@@ -283,8 +256,7 @@ namespace Fishnets
             double chance = flag2 ? 0.0 : 0.2;
             if (!flag2)
                 chance += location.getExtraTrashChanceForCrabPot((int)TileLocation.X, (int)TileLocation.Y);
-            var next = r.NextDouble();
-            if (next > chance)
+            if (r.NextDouble() > chance)
             {
                 foreach (KeyValuePair<int, string> kvp in fishData)
                 {
@@ -295,7 +267,7 @@ namespace Fishnets
                     {
                         if (r.NextDouble() <= .15)
                         {
-                            heldObject.Value = Statics.GetRandomFishForLocation(bait.Value?.ParentSheetIndex ?? -1, Game1.player, location.Name); 
+                            heldObject.Value = Statics.GetRandomFishForLocation(bait.Value?.ParentSheetIndex ?? -1, Game1.player, location.Name);
                             if (ModEntry.HasQualityBait)
                                 heldObject.Value.Quality = ModEntry.IQualityBaitApi.GetQuality(heldObject.Value.Quality, bait.Value?.Quality ?? (flag1 ? Qualities[Game1.random.Next(4)] : lowQuality));
                             break;
@@ -307,12 +279,47 @@ namespace Fishnets
                 return;
             if (flag2 && nums.Count > 0)
             {
-                heldObject.Value = new Object(nums[r.Next(nums.Count)], bait.Value?.ParentSheetIndex == 774 && r.NextDouble() <= .15 ? 2 : 1);
+                heldObject.Value = new(nums[r.Next(nums.Count)], bait.Value?.ParentSheetIndex == 774 && r.NextDouble() <= .15 ? 2 : 1);
                 if (ModEntry.HasQualityBait)
                     heldObject.Value.Quality = ModEntry.IQualityBaitApi.GetQuality(heldObject.Value.Quality, bait.Value?.Quality ?? (flag1 ? Qualities[Game1.random.Next(4)] : lowQuality));
             }
             else
-                heldObject.Value = new Object(r.Next(168, 173), 1);
+                heldObject.Value = new(r.Next(168, 173), 1);
+        }
+
+        public override void drawInMenu(SpriteBatch spriteBatch, Vector2 location, float scaleSize, float transparency, float layerDepth, StackDrawType drawStackNumber, Color color, bool drawShadow)
+        {
+            bool shouldDrawStackNumber = false;
+            if (isRecipe)
+            {
+                transparency = 0.5f;
+                scaleSize *= 0.75f;
+            }
+            else
+                shouldDrawStackNumber = ((drawStackNumber == StackDrawType.Draw && maximumStackSize() > 1 && Stack > 1) || drawStackNumber == StackDrawType.Draw_OneInclusive) && (double)scaleSize > 0.3 && Stack != int.MaxValue;
+
+            if (drawShadow)
+                spriteBatch.Draw(Game1.shadowTexture, location + new Vector2(32f, 48f), new Rectangle?(Game1.shadowTexture.Bounds), color * 0.5f, 0f, new Vector2(Game1.shadowTexture.Bounds.Center.X, Game1.shadowTexture.Bounds.Center.Y), 3f, SpriteEffects.None, layerDepth - 0.0001f);
+            spriteBatch.Draw(Texture, location + new Vector2(32f * scaleSize, 32f * scaleSize), SourceRect, color * transparency, 0f, new Vector2(8f, 8f) * scaleSize, 4f * scaleSize, SpriteEffects.None, layerDepth);
+            
+            if (shouldDrawStackNumber)
+                Utility.drawTinyDigits(Stack, spriteBatch, location + new Vector2(64 - Utility.getWidthOfTinyDigitString(Stack, 3f * scaleSize) + 3f * scaleSize, 64f - 18f * scaleSize + 1f), 3f * scaleSize, 1f, color);
+
+            if (drawStackNumber != StackDrawType.Hide && Quality > 0)
+            {
+                Rectangle quality_rect = (Quality < 4) ? new(338 + (Quality - 1) * 8, 400, 8, 8) : new(346, 392, 8, 8);
+                Texture2D quality_sheet = Game1.mouseCursors;
+                float yOffset = (Quality < 4) ? 0f : (((float)Math.Cos(Game1.currentGameTime.TotalGameTime.Milliseconds * 3.141592653589793 / 512.0) + 1f) * 0.05f);
+                spriteBatch.Draw(quality_sheet, location + new Vector2(12f, 52f + yOffset), quality_rect, color * transparency, 0f, new Vector2(4f, 4f), 3f * scaleSize * (1f + yOffset), SpriteEffects.None, layerDepth);
+            }
+
+            if (isRecipe)
+                spriteBatch.Draw(Game1.objectSpriteSheet, location + new Vector2(16f, 16f), Game1.getSourceRectForStandardTileSheet(Game1.objectSpriteSheet, 451, 16, 16), color, 0f, Vector2.Zero, 3f, SpriteEffects.None, layerDepth + 0.0001f);
+        }
+
+        public override void drawWhenHeld(SpriteBatch spriteBatch, Vector2 objectPosition, Farmer f)
+        {
+            spriteBatch.Draw(Texture, objectPosition, SourceRect, Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, Math.Max(0f, (f.getStandingY() + 3) / 10000f));
         }
 
         public override void draw(SpriteBatch spriteBatch, int x, int y, float alpha = 1)
@@ -335,24 +342,11 @@ namespace Fishnets
             spriteBatch.Draw(Game1.objectSpriteSheet, Game1.GlobalToLocal(Game1.viewport, directionOffset.Value + new Vector2(x * 64f + 32, y * 64f - 72 + num)), Game1.getSourceRectForStandardTileSheet(Game1.objectSpriteSheet, heldObject.Value.ParentSheetIndex, 16, 16), Color.White * .75f, 0.0f, new Vector2(8f, 8f), 4f, SpriteEffects.None, (float)((y + 1) * 64f / 10000.0f + 9.99999974737875E-06 + TileLocation.X / 10000.0f));
             if (heldObject.Value.Stack > 1)
                 NumberSprite.draw(heldObject.Value.Stack, spriteBatch, Game1.GlobalToLocal(Game1.viewport, directionOffset.Value + new Vector2(x * 64f + 32 + 20, y * 64f - 72 + num + 20)), Color.White, .5f, (float)((y + 1) * 64f / 10000.0f + 9.99999974737875E-06 + TileLocation.X / 10000.0f) + 0.001f, 1f, 0);
-            if (heldObject.Value.Quality > 0) 
+            if (heldObject.Value.Quality > 0)
             {
                 float num2 = quality < 4 ? 0.0f : (float)((Math.Cos(Game1.currentGameTime.TotalGameTime.Milliseconds * Math.PI / 512.0) + 1.0) * 0.0500000007450581);
-                spriteBatch.Draw(Game1.mouseCursors, Game1.GlobalToLocal(Game1.viewport, directionOffset.Value + new Vector2(x * 64f + 32 - 20, y * 64f - 72 + num + 20)), GetSourceRectForQuality(heldObject.Value.Quality), Color.White, 0.0f, new(4f), (float)(2.0 * 1.0 * (1.0 + num2)), SpriteEffects.None, (float)((y + 1) * 64f / 10000.0f + 9.99999974737875E-06 + TileLocation.X / 10000.0f) + 0.001f);
+                spriteBatch.Draw(Game1.mouseCursors, Game1.GlobalToLocal(Game1.viewport, directionOffset.Value + new Vector2(x * 64f + 32 - 20, y * 64f - 72 + num + 20)), getSourceRectForQuality(heldObject.Value.Quality), Color.White, 0.0f, new(4f), (float)(2.0 * 1.0 * (1.0 + num2)), SpriteEffects.None, (float)((y + 1) * 64f / 10000.0f + 9.99999974737875E-06 + TileLocation.X / 10000.0f) + 0.001f);
             }
-        }
-
-        private void drawDefault(SpriteBatch spriteBatch, int x, int y, float alpha = 1) => spriteBatch.Draw(Game1.objectSpriteSheet, Game1.GlobalToLocal(Game1.viewport, directionOffset + new Vector2(x * 64f, y * 64f + yBob)), Game1.getSourceRectForStandardTileSheet(Game1.objectSpriteSheet, ModEntry.FishNetId, 16, 16), Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, ((y * 64f) + directionOffset.Y + (x % 4)) / 10000.0f);
-
-        private Rectangle GetSourceRectForQuality(int quality)
-        {
-            return quality switch
-            {
-                medQuality => new(338, 400, 8, 8),
-                highQuality => new(346, 400, 8, 8),
-                bestQuality => new(346, 392, 8, 8),
-                _ => new(338, 392, 8, 8)
-            };
         }
     }
 }
