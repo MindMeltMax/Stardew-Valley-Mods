@@ -1,5 +1,6 @@
 ﻿global using Object = StardewValley.Object;
 using Fishnets.Data;
+using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -183,6 +184,9 @@ namespace Fishnets
                     data["Fish Net"] = string.Format(ObjectInfo.Recipe, ObjectInfo.Id);
                 });
             }
+
+            if (e.NameWithoutLocale.IsEquivalentTo("Fishnets/Fishnet"))
+                e.LoadFromModFile<Texture2D>("assets/FishNet.png", AssetLoadPriority.Exclusive);
         }
     }
 }

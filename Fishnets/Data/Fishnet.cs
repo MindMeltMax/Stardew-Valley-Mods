@@ -18,7 +18,7 @@ namespace Fishnets.Data
         [XmlElement("bait")]
         public readonly NetRef<Object> bait = new();
 
-        public static Texture2D Texture => ModEntry.IHelper.ModContent.Load<Texture2D>("assets/FishNet.png");
+        public static Texture2D Texture => ModEntry.IHelper.GameContent.Load<Texture2D>("Fishnets/Fishnet");
 
         public static Rectangle SourceRect => new(0, 0, 16, 16);
 
@@ -128,9 +128,9 @@ namespace Fishnets.Data
 
         public override Item getOne()
         {
-            Fishnet o = new();
+            Object o = new(ModEntry.ObjectInfo.Id, 1);
             o._GetOneFrom(this);
-            return (Object)o;
+            return o;
         }
 
         public override bool isPlaceable() => true;
@@ -238,7 +238,7 @@ namespace Fishnets.Data
         {
             if (fragility == 2)
                 return;
-            location.debris.Add(new(this, origin, destination));
+            location.debris.Add(new(new Object(ModEntry.ObjectInfo.Id, 1), origin, destination));
         }
 
         public override void DayUpdate(GameLocation location)
