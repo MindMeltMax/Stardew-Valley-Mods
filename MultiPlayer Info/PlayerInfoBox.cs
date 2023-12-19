@@ -7,9 +7,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MPInfo 
+namespace MPInfo
 {
-    public class PlayerInfoBox : IClickableMenu 
+    public class PlayerInfoBox : IClickableMenu
     {
         public Farmer Who { get; }
 
@@ -41,14 +41,14 @@ namespace MPInfo
         private Config Config => ModEntry.Config;
         private string hoverText = "";
 
-        public PlayerInfoBox(Farmer who) 
+        public PlayerInfoBox(Farmer who)
         {
             Who = who;
             width = 96 + 12 + 112 + 28;
             height = 96;
         }
 
-        public override void performHoverAction(int x, int y) 
+        public override void performHoverAction(int x, int y)
         {
             base.performHoverAction(x, y);
             if (new Rectangle(xPositionOnScreen + Config.XOffset, yPositionOnScreen + Config.YOffset, 96, 96).Contains(x, y))
@@ -62,21 +62,21 @@ namespace MPInfo
                 ModEntry.Instance.ForceUpdate();
         }
 
-        public override void gameWindowSizeChanged(Rectangle oldBounds, Rectangle newBounds) 
+        public override void gameWindowSizeChanged(Rectangle oldBounds, Rectangle newBounds)
         {
             if (oldBounds != newBounds)
                 RedrawAll();
         }
 
-        public bool Visible() => Config.Enabled && (Config.ShowSelf || Who.UniqueMultiplayerID != Game1.player.UniqueMultiplayerID);
+        public bool Visible() => ModEntry.Instance.IsEnabled && (Config.ShowSelf || Who.UniqueMultiplayerID != Game1.player.UniqueMultiplayerID);
 
-        public static void RedrawAll() 
+        public static void RedrawAll()
         {
             var index = 0;
-            foreach (var pib in Game1.onScreenMenus.Where(x => (x as PlayerInfoBox)?.Visible() ?? false).OfType<PlayerInfoBox>()) 
+            foreach (var pib in Game1.onScreenMenus.Where(x => (x as PlayerInfoBox)?.Visible() ?? false).OfType<PlayerInfoBox>())
             {
                 var pos = pib.GetPosition(index);
-                pib.xPositionOnScreen = (int)pos.X; 
+                pib.xPositionOnScreen = (int)pos.X;
                 pib.yPositionOnScreen = (int)pos.Y;
                 index++;
             }
@@ -105,7 +105,7 @@ namespace MPInfo
             return new(x + Config.XOffset, y + Config.YOffset);
         }
 
-        public override void draw(SpriteBatch b) 
+        public override void draw(SpriteBatch b)
         {
             if (!Visible())
                 return;
@@ -180,7 +180,7 @@ namespace MPInfo
                     break;
             }
 
-            if (!string.IsNullOrWhiteSpace(hoverText)) 
+            if (!string.IsNullOrWhiteSpace(hoverText))
             {
                 drawHoverText(b, hoverText, Game1.smallFont);
                 hoverText = "";
