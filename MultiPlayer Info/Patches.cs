@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
+using StardewValley.Extensions;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 
@@ -16,7 +17,7 @@ namespace MPInfo
             harmony.Patch(
                 // 0: Link into Game1.drawHUD() since that is where health and stamina is drawn
                 original: AccessTools.Method(typeof(Game1), "drawHUD"),
-                transpiler: new HarmonyMethod(typeof(Patches), nameof(Patches.Transpile_Game1_drawHUD))
+                transpiler: new HarmonyMethod(typeof(Patches), nameof(Transpile_Game1_drawHUD))
             );
         }
 
@@ -29,7 +30,7 @@ namespace MPInfo
 
         public static IEnumerable<CodeInstruction> Transpile_Game1_drawHUD(IEnumerable<CodeInstruction> instructions) 
         {
-            var replacement = AccessTools.Method(typeof(Patches), nameof(Patches.Replacement_Right));
+            var replacement = AccessTools.Method(typeof(Patches), nameof(Replacement_Right));
             var found = 0;
             foreach (var code in instructions) 
             {

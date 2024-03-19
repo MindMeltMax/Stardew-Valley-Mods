@@ -16,7 +16,7 @@ namespace Fishnets
 
     public interface IJsonAssetsApi
     {
-        int GetObjectId(string name);
+        string GetObjectId(string name);
     }
 
     public interface IDynamicGameAssetsApi

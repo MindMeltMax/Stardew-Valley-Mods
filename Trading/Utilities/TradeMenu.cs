@@ -213,8 +213,10 @@ namespace Trading.Utilities
             playerPanel_S = new Rectangle(X + 64 - 12, Y + borderWidth + spaceToClearTopBorder, 128, 192);
 
             senderInventory = new(X + 64, Y + Height - 150, false, highlightMethod:(i) => i is not Tool || i is MeleeWeapon || i is Slingshot);
-            senderInventory = new(X + Width / 2 - senderInventory.width / 2, Y + Height - senderInventory.height - 28, false, highlightMethod:(i) => i is not Tool || i is MeleeWeapon || i is Slingshot);
-            senderInventory.showGrayedOutSlots = true;
+            senderInventory = new(X + Width / 2 - senderInventory.width / 2, Y + Height - senderInventory.height - 28, false, highlightMethod: (i) => i is not Tool || i is MeleeWeapon || i is Slingshot)
+            {
+                showGrayedOutSlots = true
+            };
 
             for (int i = 0; i < 16; i++)
             {
@@ -350,7 +352,7 @@ namespace Trading.Utilities
             {
                 SenderGold = 0;
                 sender.Text = "0";
-                sendNetworkMessage(Utilites.MSG_UpdateTradeInventory, getParsableInventory());
+                sendNetworkMessage(MSG_UpdateTradeInventory, getParsableInventory());
                 return;
             }
             float value = Convert.ToSingle(sender.Text);
@@ -358,7 +360,7 @@ namespace Trading.Utilities
                 value = Sender.Money;
             SenderGold = value;
             sender.Text = $"{value:0}";
-            sendNetworkMessage(Utilites.MSG_UpdateTradeInventory, getParsableInventory());
+            sendNetworkMessage(MSG_UpdateTradeInventory, getParsableInventory());
         }
 
         private NetworkInventory getParsableInventory() => new(Game1.player.UniqueMultiplayerID, SenderGold, Utilites.ParseItems(SenderItems));
@@ -421,7 +423,7 @@ namespace Trading.Utilities
         {
             if (SentOffer || ReceivedOffer || AcceptedOffer || ReceivedConfirmation || ConfirmedOffer)
             {
-                sendNetworkMessage(Utilites.MSG_DeclineOffer, (NetworkPlayer)Game1.player);
+                sendNetworkMessage(MSG_DeclineOffer, (NetworkPlayer)Game1.player);
                 AcceptedOffer = false;
                 SentOffer = false;
                 ReceivedOffer = false;
@@ -443,7 +445,7 @@ namespace Trading.Utilities
                     Game1.createItemDebris(SenderItems[i], Sender.getStandingPosition(), Sender.FacingDirection);
 
             if (sendExitMessage)
-                sendNetworkMessage(Utilites.MSG_ExitTrade, (NetworkPlayer)Game1.player);
+                sendNetworkMessage(MSG_ExitTrade, (NetworkPlayer)Game1.player);
             exitThisMenu(playSound);
         }
 
@@ -549,7 +551,7 @@ namespace Trading.Utilities
                 if (!SentOffer && !ReceivedOffer)
                 {
                     resetOfferStatus();
-                    sendNetworkMessage(Utilites.MSG_SendTradeOffer, (NetworkPlayer)Game1.player);
+                    sendNetworkMessage(MSG_SendTradeOffer, (NetworkPlayer)Game1.player);
                     SentOffer = true;
                     return;
                 }
@@ -560,7 +562,7 @@ namespace Trading.Utilities
                 }
                 if (ReceivedOffer)
                 {
-                    sendNetworkMessage(Utilites.MSG_SendTradeOffer, (NetworkPlayer)Game1.player);
+                    sendNetworkMessage(MSG_SendTradeOffer, (NetworkPlayer)Game1.player);
                     AcceptedOffer = true;
                     return;
                 }
@@ -571,11 +573,11 @@ namespace Trading.Utilities
                 if (!AcceptedOffer) return;
                 if (!ReceivedConfirmation)
                 {
-                    sendNetworkMessage(Utilites.MSG_ConfirmTrade, (NetworkPlayer)Game1.player);
+                    sendNetworkMessage(MSG_ConfirmTrade, (NetworkPlayer)Game1.player);
                     ConfirmedOffer = true;
                     return;
                 }
-                sendNetworkMessage(Utilites.MSG_ConfirmTrade, (NetworkPlayer)Game1.player);
+                sendNetworkMessage(MSG_ConfirmTrade, (NetworkPlayer)Game1.player);
                 SenderItems.Clear();
                 for (int i = 0; i < ReceiverItems.Count; i++)
                     if (!Sender.addItemToInventoryBool(ReceiverItems[i]))
@@ -596,7 +598,7 @@ namespace Trading.Utilities
                     reloadItems();
                     Sender.removeItemFromInventory(i);
                     Game1.playSound("dwop");
-                    sendNetworkMessage(Utilites.MSG_UpdateTradeInventory, getParsableInventory());
+                    sendNetworkMessage(MSG_UpdateTradeInventory, getParsableInventory());
                     return;
                 }
             }
@@ -610,7 +612,7 @@ namespace Trading.Utilities
                     Sender.addItemToInventory(i);
                     reloadItems();
                     Game1.playSound("dwop");
-                    sendNetworkMessage(Utilites.MSG_UpdateTradeInventory, getParsableInventory());
+                    sendNetworkMessage(MSG_UpdateTradeInventory, getParsableInventory());
                     return;
                 }
             }
@@ -629,7 +631,7 @@ namespace Trading.Utilities
                     addItemToTrade(newObj);
                     reloadItems();
                     Game1.playSound("dwop");
-                    sendNetworkMessage(Utilites.MSG_UpdateTradeInventory, getParsableInventory());
+                    sendNetworkMessage(MSG_UpdateTradeInventory, getParsableInventory());
                     return;
                 }
             }
@@ -647,7 +649,7 @@ namespace Trading.Utilities
                     reloadItems();
                     Game1.playSound("dwop");
                     var inv = getParsableInventory();
-                    sendNetworkMessage(Utilites.MSG_UpdateTradeInventory, getParsableInventory());
+                    sendNetworkMessage(MSG_UpdateTradeInventory, getParsableInventory());
                     return;
                 }
             }

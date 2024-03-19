@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chest_Displays.Patches
+namespace ChestDisplays.Patches
 {
     public class Patcher
     {

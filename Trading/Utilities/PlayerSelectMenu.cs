@@ -96,15 +96,24 @@ namespace Trading.Utilities
             upperRightCloseButton.myID = IdCloseButton;
 
             reloadButtons();
-            assignIds();
+            upperRightCloseButton.downNeighborID = upperRightCloseButton.leftNeighborID = _buttons.Count > 1 ? _buttons[1].myID : (!_buttons.Any() ? -7777 : _buttons[0].myID);
+            upperRightCloseButton.upNeighborID = upperRightCloseButton.rightNeighborID = -7777;
         }
 
         private void reloadButtons()
         {
-            for (int i = 0; i < _nearbyFarmers.Count; i++)
+            int counter = 0;
+            foreach (var farmer in _nearbyFarmers)
             {
-                var item = _nearbyFarmers.ElementAt(i);
-                _buttons.Add(new(new((int)(BasePositionPlayerButtons.X + (96 * (i % 2))), (int)(BasePositionPlayerButtons.Y + (96 * (i / 2))), 64, 64), $"{item.Key.UniqueMultiplayerID}"));
+                _buttons.Add(new(new((int)(BasePositionPlayerButtons.X + (96 * (counter % 2))), (int)(BasePositionPlayerButtons.Y + (96 * (counter / 2))), 64, 64), $"{farmer.Key.UniqueMultiplayerID}")
+                {
+                    myID = BaseIdPlayerButton + counter,
+                    leftNeighborID = counter == 0 ? -7777 : BaseIdPlayerButton + counter - 1,
+                    rightNeighborID = counter == _nearbyFarmers.Count - 1 ? -7777 : BaseIdPlayerButton + counter + 1,
+                    upNeighborID = counter - 2 < 0 ? upperRightCloseButton.myID : BaseIdPlayerButton + counter - 2,
+                    downNeighborID = counter + 2 >= _nearbyFarmers.Count ? -7777 : BaseIdPlayerButton + counter + 2
+                });
+                ++counter;
             }
         }
 
@@ -115,7 +124,7 @@ namespace Trading.Utilities
             for (int i = 0; i < _buttons.Count; i++)
                 _buttons[i].myID = BaseIdPlayerButton + i;
 
-            for (int i=0; i<_buttons.Count; i++)
+            for (int i = 0; i < _buttons.Count; i++) 
             {
                 if (i % 2 == 0)
                 {
@@ -258,7 +267,7 @@ namespace Trading.Utilities
                     var sPlayer = ModEntry.IHelper.Multiplayer.GetConnectedPlayer(farmer.Key.UniqueMultiplayerID);
                     if (sPlayer != null && sPlayer.HasSmapi && sPlayer.Mods.Any(x => x.ID == ModEntry.IHelper.ModRegistry.ModID))
                     {
-                        ModEntry.IHelper.Multiplayer.SendMessage((NetworkPlayer)Game1.player, Utilites.MSG_RequestTrade, ModEntry.ModId, new[] { farmer.Key.UniqueMultiplayerID });
+                        ModEntry.IHelper.Multiplayer.SendMessage((NetworkPlayer)Game1.player, MSG_RequestTrade, ModEntry.ModId, new[] { farmer.Key.UniqueMultiplayerID });
                         Game1.activeClickableMenu = new TradeMenu(Game1.player, farmer.Key, true);
                         break;
                     }
@@ -306,7 +315,7 @@ namespace Trading.Utilities
                 }
 
                 _timeSinceLastPoll = 0;
-                ModEntry.IHelper.Multiplayer.SendMessage("", Utilites.MSG_PollStatus, ModEntry.ModId, NearbyFarmers.Select(x => x.Key.UniqueMultiplayerID).ToArray());
+                ModEntry.IHelper.Multiplayer.SendMessage("", MSG_PollStatus, ModEntry.ModId, NearbyFarmers.Select(x => x.Key.UniqueMultiplayerID).ToArray());
             }
             else _timeSinceLastPoll++;
         }

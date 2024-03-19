@@ -10,7 +10,7 @@ namespace Fishnets.Automate
 {
     internal class ModEntry : Mod
     {
-        internal static int FishnetId;
+        internal static string FishnetId;
 
         public override void Entry(IModHelper helper)
         {

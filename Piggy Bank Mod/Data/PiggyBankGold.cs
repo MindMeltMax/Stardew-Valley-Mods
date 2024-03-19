@@ -1,12 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Piggy_Bank_Mod.Data
+namespace PiggyBank.Data
 {
+    [Obsolete("Switching to modData format with PiggyBankItem")]
     public class PiggyBankGold
     {
         public string Label { get; set; }
@@ -29,13 +27,5 @@ namespace Piggy_Bank_Mod.Data
             OwnerID = playerId;
             BankLocationName = locName;
         }
-    }
-
-    public class allGold
-    {
-        public List<PiggyBankGold> goldList { get; set; }
-
-        public allGold() { }
-        public allGold(List<PiggyBankGold> list) { goldList = list; }
     }
 }

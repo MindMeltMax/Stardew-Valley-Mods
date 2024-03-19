@@ -11,7 +11,7 @@ namespace WinterPigs
     {
         public override void Entry(IModHelper helper)
         {
-            Helper.Events.GameLoop.GameLaunched += (s, e) => Patches.Patch(Monitor, Helper);
+            Helper.Events.GameLoop.GameLaunched += (_, _) => Patches.Patch(Monitor, Helper);
         }
     }
 }

@@ -58,7 +58,7 @@ namespace MPInfo
         public override void receiveLeftClick(int x, int y, bool playSound = true)
         {
             base.receiveLeftClick(x, y, playSound);
-            if (new Rectangle(xPositionOnScreen + Config.XOffset, yPositionOnScreen + Config.YOffset, 96, 96).Contains(x, y))
+            if (new Rectangle(xPositionOnScreen, yPositionOnScreen, 96, 96).Contains(x, y))
                 ModEntry.Instance.ForceUpdate();
         }
 
@@ -125,12 +125,12 @@ namespace MPInfo
                     Who.FarmerRenderer.drawMiniPortrat(b, new(xPositionOnScreen + 16, yPositionOnScreen + 15), 0.89f, 4f, 0, Who);
                     if (Who.health <= 0) //Icon to display being knocked out
                     {
-                        b.Draw(Game1.fadeToBlackRect, new(xPositionOnScreen + 12, yPositionOnScreen + 12, 72, 72), new(0, 0, 1, 1), Color.Black * 0.6f, 0.0f, Vector2.Zero, SpriteEffects.None, 0.9f);
-                        b.Draw(Texture, new(xPositionOnScreen + 32, yPositionOnScreen + 39), SourceRectIconSkull, Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.9f);
+                        b.Draw(Game1.fadeToBlackRect, new(xPositionOnScreen + 12, yPositionOnScreen + 12, 72, 72), new Rectangle(0, 0, 1, 1), Color.Black * 0.6f, 0.0f, Vector2.Zero, SpriteEffects.None, 0.9f);
+                        b.Draw(Texture, new(xPositionOnScreen + 28, yPositionOnScreen + 36), SourceRectIconSkull, Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.9f);
                     }
                     if (Who.passedOut || Who.FarmerSprite.isPassingOut()) //Icon to display passing out
                     {
-                        b.Draw(Game1.fadeToBlackRect, new(xPositionOnScreen + 12, yPositionOnScreen + 12, 72, 72), new(0, 0, 1, 1), Color.Black * 0.6f, 0.0f, Vector2.Zero, SpriteEffects.None, 0.9f);
+                        b.Draw(Game1.fadeToBlackRect, new(xPositionOnScreen + 12, yPositionOnScreen + 12, 72, 72), new Rectangle(0, 0, 1, 1), Color.Black * 0.6f, 0.0f, Vector2.Zero, SpriteEffects.None, 0.9f);
                         b.Draw(Texture, new(xPositionOnScreen + 40, yPositionOnScreen + 39), SourceRectIconPassOut[0], Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.9f);
                         b.Draw(Texture, new(xPositionOnScreen + 32, yPositionOnScreen + 47), SourceRectIconPassOut[1], Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.9f);
                         for (int i = 0; i < 2; i++) //Yes the corners are necessary
@@ -157,12 +157,12 @@ namespace MPInfo
                     Who.FarmerRenderer.drawMiniPortrat(b, new(xPositionOnScreen + 28, yPositionOnScreen + 15), 0.89f, 4f, 0, Who);
                     if (Who.health <= 0) //Icon to display being knocked out
                     {
-                        b.Draw(Game1.fadeToBlackRect, new(xPositionOnScreen + 24, yPositionOnScreen + 12, 72, 72), new(0, 0, 1, 1), Color.Black * 0.6f, 0.0f, Vector2.Zero, SpriteEffects.None, 0.9f);
+                        b.Draw(Game1.fadeToBlackRect, new(xPositionOnScreen + 24, yPositionOnScreen + 12, 72, 72), new Rectangle(0, 0, 1, 1), Color.Black * 0.6f, 0.0f, Vector2.Zero, SpriteEffects.None, 0.9f);
                         b.Draw(Texture, new(xPositionOnScreen + 44, yPositionOnScreen + 39), SourceRectIconSkull, Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.9f);
                     }
                     if (Who.passedOut || Who.FarmerSprite.isPassingOut()) //Icon to display passing out
                     {
-                        b.Draw(Game1.fadeToBlackRect, new(xPositionOnScreen + 24, yPositionOnScreen + 12, 72, 72), new(0, 0, 1, 1), Color.Black * 0.6f, 0.0f, Vector2.Zero, SpriteEffects.None, 0.9f);
+                        b.Draw(Game1.fadeToBlackRect, new(xPositionOnScreen + 24, yPositionOnScreen + 12, 72, 72), new Rectangle(0, 0, 1, 1), Color.Black * 0.6f, 0.0f, Vector2.Zero, SpriteEffects.None, 0.9f);
                         b.Draw(Texture, new(xPositionOnScreen + 52, yPositionOnScreen + 39), SourceRectIconPassOut[0], Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.9f);
                         b.Draw(Texture, new(xPositionOnScreen + 44, yPositionOnScreen + 47), SourceRectIconPassOut[1], Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.9f);
                         for (int i = 0; i < 2; i++) //Yes the corners are necessary
@@ -170,7 +170,7 @@ namespace MPInfo
                                 b.Draw(Texture, new(xPositionOnScreen + 48 + (20 * j), yPositionOnScreen + 43 + (20 * i)), SourceRectIconPassOut[2], Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.9f);
                     }
                     if (Config.ShowHostCrown && Crown is not null && Game1.MasterPlayer.UniqueMultiplayerID == Who.UniqueMultiplayerID)
-                        b.Draw(Crown, new(xPositionOnScreen + 96, yPositionOnScreen - 14), SourceRectIconCrown, Color.White, .79f, Vector2.Zero, 4f, SpriteEffects.None, 7.91f);
+                        b.Draw(Crown, new(xPositionOnScreen + 96, yPositionOnScreen - 14), SourceRectIconCrown, Color.White, .7f, Vector2.Zero, 4f, SpriteEffects.None, 7.91f);
                     FarmerRenderer.isDrawingForUI = false;
 
                     b.Draw(Texture, new(xPositionOnScreen - 96 - 10, yPositionOnScreen + 4 + 26), SourceRectIconHealth, Color.White, 0.0f, Vector2.Zero, 2f, SpriteEffects.None, 0.89f);

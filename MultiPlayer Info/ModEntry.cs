@@ -28,12 +28,13 @@ namespace MPInfo
         private bool enabled;
 
         public bool IsEnabled => enabled;
+
         public override void Entry(IModHelper helper)
         {
             Instance = this;
             PlayerInfoBox.Crown = helper.ModContent.Load<Texture2D>("Assets/Crown.png");
             Config = helper.ReadConfig<Config>();
-            enabled = Config.EnabledByDefault;
+            enabled = Config.Enabled;
 
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
 
@@ -82,12 +83,12 @@ namespace MPInfo
 
             configMenu.AddBoolOption(
                 mod: ModManifest,
-                name: () => "EnabledByDefault",
+                name: () => "Enabled",
                 tooltip: () => "",
-                getValue: () => Config.EnabledByDefault,
+                getValue: () => Config.Enabled,
                 setValue: value =>
                 {
-                    Config.EnabledByDefault = value;
+                    Config.Enabled = enabled = value;
                     PlayerInfoBox.RedrawAll();
                 }
             );
@@ -173,9 +174,7 @@ namespace MPInfo
         public void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
             if (e.Button == Config.ToggleButton)
-            {
                 enabled = !enabled;
-            }
         }
 
         private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)

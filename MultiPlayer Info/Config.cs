@@ -5,9 +5,9 @@ namespace MPInfo
 {
     public class Config 
     {
-        public bool EnabledByDefault { get; set; } = true;
+        public bool Enabled { get; set; } = true;
 
-        public SButton ToggleButton { get; set; } = SButton.F6s;
+        public SButton ToggleButton { get; set; } = SButton.F6;
         public bool ShowSelf { get; set; } = false;
         public bool ShowHostCrown { get; set; } = true;
         public bool HideHealthBars { get; set; } = false;

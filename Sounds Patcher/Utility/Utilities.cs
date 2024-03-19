@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sounds_Patcher.Utility
+namespace SoundsPatcher.Utility
 {
     public class Utilities
     {
@@ -17,7 +17,7 @@ namespace Sounds_Patcher.Utility
 
         public static Dictionary<string, bool> GetSoundsDict()
         {
-            Dictionary<string, bool> soundDict = new Dictionary<string, bool>();
+            Dictionary<string, bool> soundDict = new();
 
             string[] cues = SoundCues.Split('/');
             cues = cues.OrderBy(x => x).ToArray();
@@ -30,7 +30,7 @@ namespace Sounds_Patcher.Utility
 
         public static Dictionary<string, bool> GetSongsDict()
         {
-            Dictionary<string, bool> songDict = new Dictionary<string, bool>();
+            Dictionary<string, bool> songDict = new();
 
             string[] songs = SongCues.Split('/');
             songs = songs.OrderBy(x => x).ToArray();
@@ -43,15 +43,14 @@ namespace Sounds_Patcher.Utility
 
         public static void AddAllSongsToJukebox()
         {
-            if(Game1.player != null)
+            if (Game1.player != null) 
             {
                 string[] songs = SongCues.Split('/');
                 foreach (string song in songs)
-                    if (!Game1.player.songsHeard.Contains(song))
-                        Game1.player.songsHeard.Add(song);
+                    Game1.player.songsHeard.Add(song);
             }
 
-            ModEntry.StaticMonitor.Log("Added every song to the jukebox", LogLevel.Info);
+            ModEntry.IMonitor.Log("Added every song to the jukebox", LogLevel.Info);
         }
     }
 }
