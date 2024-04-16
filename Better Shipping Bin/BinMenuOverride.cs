@@ -183,7 +183,8 @@ namespace BetterShipping
         public override void receiveScrollWheelAction(int direction)
         {
             //Invert direction because scroll wheel is funny
-            direction = direction > 0 ? -Math.Abs(direction) : Math.Abs(direction);
+            if (!ModEntry.IConfig.InvertScrollWheelDirection)
+                direction = direction > 0 ? -Math.Abs(direction) : Math.Abs(direction);
 
             int _lastOffset = Offset;
             if (direction > 0 && canScrollDown)
@@ -335,7 +336,8 @@ namespace BetterShipping
 
         private void drawTotalValue(SpriteBatch b)
         {
-            if (farm.getShippingBin(Game1.player).Count <= 0) return;
+            if (farm.getShippingBin(Game1.player).Count <= 0 || !ModEntry.IConfig.ShowTotalValueBanner)
+                return;
 
             int value = 0;
             string text = "Total value : ";
@@ -664,6 +666,7 @@ namespace BetterShipping
         /// <returns>The items past the current offset in the shipping bin's item list</returns>
         private List<Item> getItemsInView(int offset)
         {
+            
             farm.getShippingBin(Game1.player).RemoveEmptySlots();
             return new(actuallItems.Skip(maxItemsPerPage / 3 * offset).Take(maxItemsPerPage));
         }
@@ -688,9 +691,9 @@ namespace BetterShipping
         /// <returns>The item from the slot or null if it could not be retrieved</returns>
         private Item? TakeItemAt(int index, int stack, bool player)
         {
-            IList<Item> items = player ? inventory.actualInventory : actuallItems;
+            IList<Item> items = player ? inventory.actualInventory : itemsInView;
 
-            if (index > items.Count || index < 0)
+            if (index >= items.Count || index < 0)
             {
                 RenderItems();
                 broadCastToMultiplayer();
@@ -707,7 +710,12 @@ namespace BetterShipping
             Item copy = i.getOne();
             copy.Stack = takeStack;
             if ((items[index].Stack -= takeStack) <= 0)
+            {
                 items[index] = null;
+                if (!player)
+                    actuallItems[index + (offset * RowLength)] = null;
+            }
+
             RenderItems();
             broadCastToMultiplayer();
             return copy;
@@ -733,9 +741,9 @@ namespace BetterShipping
                 broadCastToMultiplayer();
                 return null;
             }
-            IList<Item> items = player ? inventory.actualInventory : actuallItems;
+            IList<Item> items = player ? inventory.actualInventory : itemsInView;
 
-            if (index > items.Count || index < 0)
+            if (index >= items.Count || index < 0)
             {
                 RenderItems();
                 broadCastToMultiplayer();

@@ -11,5 +11,9 @@ namespace GeodePreview
         public bool ShowAlways { get; set; } = true;
 
         public bool ShowStack { get; set; } = true;
+
+        public int Offset { get; set; } = 1;
+
+        public bool ShowMuseumHint { get; set; } = true;
     }
 }

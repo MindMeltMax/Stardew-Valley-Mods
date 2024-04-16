@@ -15,7 +15,7 @@ namespace Multi_User_Chest
 
         private void OnButtonDown(object sender, ButtonPressedEventArgs e)
         {
-            if (!Context.IsMultiplayer || !Context.HasRemotePlayers || Game1.activeClickableMenu != null) 
+            if (!Context.IsMultiplayer || Game1.getOnlineFarmers().Count <= 1 || Game1.activeClickableMenu != null) 
                 return;
 
             if (e.Button.IsActionButton())
@@ -28,7 +28,7 @@ namespace Multi_User_Chest
                 var OatT = Game1.currentLocation.getObjectAtTile((int)tile.X, (int)tile.Y);
 
                 if (OatT is Chest c && c.playerChest.Value)
-                    c.ShowMenu();
+                    DelayedAction.functionAfterDelay(c.ShowMenu, 250);
             }
         }
     }
