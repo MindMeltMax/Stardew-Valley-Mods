@@ -1,10 +1,16 @@
 ﻿{
   "Name": "Quality Bait",
   "Author": "MindMeltMax",
-  "Version": "1.1.1",
+  "Version": "1.2.0",
   "Description": "Adds recipes for quality variants for all bait variants",
   "UniqueID": "MindMeltMax.QualityBait",
   "EntryDll": "Quality Bait.dll",
   "MinimumApiVersion": "4.0.0",
-  "UpdateKeys": [ "nexus:16832" ]
+  "UpdateKeys": [ "nexus:16832" ],
+  "Dependencies": [
+    {
+      "UniqueID": "leclair.bettercrafting",
+      "IsRequired": false
+    }
+  ]
 }

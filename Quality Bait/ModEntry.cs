@@ -1,7 +1,5 @@
 ﻿global using Object = StardewValley.Object;
-
 using StardewModdingAPI;
-using StardewModdingAPI.Enums;
 using StardewModdingAPI.Events;
 using StardewValley;
 using System;
@@ -9,7 +7,7 @@ using System.Collections.Generic;
 
 namespace QualityBait
 {
-    internal class ModEntry : Mod
+    public class ModEntry : Mod
     {
         internal static IMonitor IMonitor;
         internal static IModHelper IHelper;
@@ -18,7 +16,7 @@ namespace QualityBait
         internal static IApi IApi;
 
         internal static Dictionary<string, string> Recipes; 
-        private static readonly List<int> Qualities = new() { Object.lowQuality, Object.medQuality, Object.highQuality, Object.bestQuality };
+        private static readonly List<int> Qualities = [Object.lowQuality, Object.medQuality, Object.highQuality, Object.bestQuality];
 
         public override void Entry(IModHelper helper)
         {
@@ -37,6 +35,8 @@ namespace QualityBait
             reloadRecipes();
         }
 
+        public static IEnumerable<string> GetRecipeKeys() => Recipes.Keys;
+
         private void onLocaleChanged(object sender, LocaleChangedEventArgs e)
         {
             reloadRecipes();
@@ -48,7 +48,7 @@ namespace QualityBait
 
         private void onGameLaunched(object sender, GameLaunchedEventArgs e)
         {
-            Patches.Patch(Monitor, Helper);
+            Patches.Patch(ModManifest.UniqueID);
             Helper.GameContent.InvalidateCache("Data/CraftingRecipes");
             CraftingRecipe.InitShared();
 
@@ -129,9 +129,13 @@ namespace QualityBait
 
             gmcm.Register(ModManifest, () => IConfig = new(), () => IHelper.WriteConfig(IConfig));
 
-            gmcm.AddNumberOption(ModManifest, () => IConfig.ChancePercentage, (x) => IConfig.ChancePercentage = x, () => "Chance Percentage", () => "Determines the rate a which the caught fish will match the quality of the bait (0: never, 100: always)", 0, 100);
+            gmcm.AddNumberOption(ModManifest, () => IConfig.ChancePercentage, (x) => IConfig.ChancePercentage = x, () => ITranslations.Get("Config.ChancePercentage.Title"), () => ITranslations.Get("Config.ChancePercentage.Description"), 0, 100);
 
-            gmcm.AddBoolOption(ModManifest, () => IConfig.BaitMakerQuality, (x) => IConfig.BaitMakerQuality = x, () => "Bait Maker Quality", () => "Toggle whether or not bait from the bait maker should output quality (same chance as for catches)");
+            gmcm.AddBoolOption(ModManifest, () => IConfig.BaitMakerQuality, (x) => IConfig.BaitMakerQuality = x, () => ITranslations.Get("Config.BaitMakerQuality.Title"), () => ITranslations.Get("Config.BaitMakerQuality.Description"));
+
+            gmcm.AddBoolOption(ModManifest, () => IConfig.EnableBetterCraftingIntegration, (x) => { IConfig.EnableBetterCraftingIntegration = x; Patches.UnPatch(ModManifest.UniqueID); Patches.Patch(ModManifest.UniqueID); }, () => ITranslations.Get("Config.BetterCraftingIntegration.Title"), () => ITranslations.Get("Config.BetterCraftingIntegration.Description"));
+
+            gmcm.AddBoolOption(ModManifest, () => IConfig.ForceLowerQuality, (x) => IConfig.ForceLowerQuality = x, () => ITranslations.Get("Config.ForceLowerQuality.Title"), () => ITranslations.Get("Config.ForceLowerQuality.Description"));
         }
 
         private void reloadRecipes()
@@ -186,5 +190,4 @@ namespace QualityBait
 
         void AddBoolOption(IManifest mod, Func<bool> getValue, Action<bool> setValue, Func<string> name, Func<string> tooltip = null, string fieldId = null);
     }
-
 }

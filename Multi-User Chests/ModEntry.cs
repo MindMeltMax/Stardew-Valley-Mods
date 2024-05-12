@@ -1,21 +1,18 @@
-﻿using HarmonyLib;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
-using StardewValley.Menus;
-using StardewValley.Network;
 using StardewValley.Objects;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
+using System.Reflection;
 
 namespace Multi_User_Chest
 {
     public class ModEntry : Mod
     {
         private readonly PerScreen<Vector2?> Tile = new();
+        private FieldInfo currentLidFrame;
 
         public override void Entry(IModHelper helper) //I'm commited to doing this without harmony at this point
         {
@@ -23,6 +20,8 @@ namespace Multi_User_Chest
 
             helper.Events.World.ObjectListChanged += OnObjectListChanged;
             helper.Events.Display.MenuChanged += OnMenuChanged;
+
+            currentLidFrame = typeof(Chest).GetField("currentLidFrame", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
         private void OnButtonDown(object sender, ButtonPressedEventArgs e)
@@ -37,14 +36,18 @@ namespace Multi_User_Chest
                 if (Helper.ModRegistry.IsLoaded("spacechase0.ExtendedReach")) 
                     tile = e.Cursor.Tile;
 
-                var OatTOrig = Game1.currentLocation.getObjectAtTile((int)tile.X, (int)tile.Y);
+                var OatTOrig = Game1.player.currentLocation?.getObjectAtTile((int)tile.X, (int)tile.Y);
+                if (OatTOrig is null || OatTOrig is not Chest c)
+                    return;
+                int lidFrame = (int)currentLidFrame.GetValue(c);
 
                 DelayedAction.functionAfterDelay(() =>
                 {
-                    var OatT = Game1.currentLocation.getObjectAtTile((int)tile.X, (int)tile.Y); //Check after delay for the chest object
-                    if (OatT.QualifiedItemId == OatTOrig.QualifiedItemId && OatT is Chest c && c.playerChest.Value && c.GetMutex().IsLocked())
+                    var OatT = Game1.player.currentLocation?.getObjectAtTile((int)tile.X, (int)tile.Y); //Check after delay for the chest object
+                    if (OatT?.QualifiedItemId == OatTOrig?.QualifiedItemId && OatT is Chest c && c.playerChest.Value && c.GetMutex().IsLocked())
                     {
-                        Game1.playSound("openChest");
+                        if (lidFrame != c.startingLidFrame.Value)
+                            Game1.playSound("openChest");
                         c.ShowMenu();
                         Tile.Value = c.TileLocation;
                     }
