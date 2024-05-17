@@ -14,16 +14,10 @@ namespace QualityBait
 {
     internal static class Patches
     {
-        private static Harmony harmony;
-
         internal static void Patch(string id)
         {
-            harmony ??= new(id);
+            Harmony harmony = new(id);
 
-            harmony.Patch(
-                original: AccessTools.Method(typeof(CraftingPage), "clickCraftingRecipe", [typeof(ClickableTextureComponent), typeof(bool)]),
-                transpiler: new(typeof(Patches), nameof(CraftingPage_ClickCraftingRecipe_Transpiler))
-            );
             harmony.Patch(
                 original: AccessTools.Method(typeof(CraftingPage), nameof(CraftingPage.draw), [typeof(SpriteBatch)]),
                 transpiler: new(typeof(Patches), nameof(CraftingPage_Draw_Transpiler))
@@ -54,82 +48,13 @@ namespace QualityBait
                 original: AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.drawMenuView)),
                 postfix: new(typeof(Patches), nameof(CraftingRecipe_DrawMenuView_Postfix))
             );
-
-            // Khloe if you see this, I'm sorry, believe me I tried to use the api, but at around 4 am I just gave up all hope.
-            // I can't use the OnPerformCraft or OnPostCraft event because the first won't run the original code, and the second won't craft more than 1 item because the next one is not stackable with the quality variant
-            // If / When I find a way to use the api for all of this, I'll switch to that
-            if (ModEntry.IHelper.ModRegistry.IsLoaded("leclair.bettercrafting") && ModEntry.IConfig.EnableBetterCraftingIntegration)
-            {
-                try
-                {
-                    harmony.Patch(
-                        original: AccessTools.Method("Leclair.Stardew.BetterCrafting.Menus.BetterCraftingPage:PerformCraftRecursive"),
-                        transpiler: new(typeof(Patches), nameof(BetterCraftingPage_PerformCraftRecursive_Transpiler))
-                    );
-                }
-                catch(Exception ex)
-                {
-                    ModEntry.IMonitor.Log($"An error occured while trying to apply a patch to a better crafting method, most likely better crafting updated and the relevant code has changed. Please submit a bug report with a log of this error to Quality Bait", StardewModdingAPI.LogLevel.Error);
-                    ModEntry.IMonitor.Log($"[{nameof(BetterCraftingPage_PerformCraftRecursive_Transpiler)}] {ex.GetType().Name} - {ex.Message}\n{ex.StackTrace}");
-                }
-                try
-                {
-                    harmony.Patch(
-                        original: AccessTools.Method("Leclair.Stardew.BetterCrafting.Menus.BetterCraftingPage:draw", [typeof(SpriteBatch)]),
-                        transpiler: new(typeof(Patches), nameof(BetterCraftingPage_Draw_Transpiler))
-                    );
-                }
-                catch (Exception ex)
-                {
-                    ModEntry.IMonitor.Log($"An error occured while trying to apply a patch to a better crafting method, most likely better crafting updated and the relevant code has changed. Please submit a bug report with a log of this error to Quality Bait", StardewModdingAPI.LogLevel.Error);
-                    ModEntry.IMonitor.Log($"[{nameof(BetterCraftingPage_Draw_Transpiler)}] {ex.GetType().Name} - {ex.Message}\n{ex.StackTrace}");
-                }
-                try
-                {
-                    harmony.Patch(
-                        original: AccessTools.Method("Leclair.Stardew.BetterCrafting.Menus.BetterCraftingPage:CanCraft"),
-                        transpiler: new(typeof(Patches), nameof(BetterCraftingPage_CanCraft_Transpiler))
-                    );
-                }
-                catch (Exception ex)
-                {
-                    ModEntry.IMonitor.Log($"An error occured while trying to apply a patch to a better crafting method, most likely better crafting updated and the relevant code has changed. Please submit a bug report with a log of this error to Quality Bait", StardewModdingAPI.LogLevel.Error);
-                    ModEntry.IMonitor.Log($"[{nameof(BetterCraftingPage_CanCraft_Transpiler)}] {ex.GetType().Name} - {ex.Message}\n{ex.StackTrace}");
-                }
-            }
+            harmony.Patch(
+                original: AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.createItem)),
+                postfix: new(typeof(Patches), nameof(CraftingRecipe_CreateItem_Postfix))
+            );
         }
-
-        internal static void UnPatch(string id) => harmony.UnpatchAll(id);
 
         #region Transpilers
-
-        internal static IEnumerable<CodeInstruction> CraftingPage_ClickCraftingRecipe_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-        {
-            generator.DeclareLocal(typeof(int));
-            CodeMatcher matcher = new(instructions, generator);
-
-            matcher.Start().MatchEndForward([
-                new(OpCodes.Ldloc_0), //recipe
-                new(OpCodes.Callvirt, AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.createItem))),
-                new(OpCodes.Stloc_1) //jump past item creation
-            ]).Advance(1).InsertAndAdvance([
-                new(OpCodes.Ldloc_0), //recipe
-                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(isKnownRecipe))),
-                new(OpCodes.Brfalse_S), //skip next code if not known recipe
-                new(OpCodes.Ldloc_0), //recipe
-                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(getQualityForRecipe))),
-                new(OpCodes.Stloc_S, 6), //assign quality to variable at index 6
-                new(OpCodes.Ldloc_1), //obj
-                new(OpCodes.Ldloc_S, 6), //quality
-                new(OpCodes.Callvirt, AccessTools.PropertySetter(typeof(Object), nameof(Object.Quality))) //set quality
-            ]).CreateLabel(out var l).MatchEndBackwards([
-                new(OpCodes.Ldloc_0), //recipe
-                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(isKnownRecipe))),
-                new(OpCodes.Brfalse_S)
-            ]).Instruction.operand = l; //set jump label at skip instruction
-
-            return matcher.Instructions();
-        }
 
         internal static IEnumerable<CodeInstruction> CraftingPage_Draw_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
@@ -153,131 +78,6 @@ namespace QualityBait
 
             return matcher.Instructions();
         }
-
-        #region Better Crafting
-
-        internal static IEnumerable<CodeInstruction> BetterCraftingPage_PerformCraftRecursive_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-        {
-            CodeMatcher matcher = new(instructions, generator);
-
-            //Has Ingredients Fix
-            matcher.Start().MatchEndForward([
-                new(OpCodes.Ldloc_0),
-                new(OpCodes.Ldfld),
-                new(OpCodes.Call),
-                new(OpCodes.Callvirt),
-                new(OpCodes.Brfalse_S),
-            ]).Advance(1).InsertAndAdvance([
-                new(OpCodes.Ldarg_1),
-                new(OpCodes.Callvirt, AccessTools.PropertyGetter("Leclair.Stardew.Common.Crafting.IRecipe:CraftingRecipe")),
-                new(OpCodes.Call, AccessTools.PropertyGetter(typeof(Game1), nameof(Game1.player))),
-                new(OpCodes.Ldarg_S, 6),
-                new(OpCodes.Ldc_I4_0),
-                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(hasIngredientsForRecipe))),
-                new(OpCodes.Brfalse_S),
-            ]).MatchStartForward([
-                new(OpCodes.Ldloc_0),
-                new(OpCodes.Ldfld),
-                new(OpCodes.Ldloc_0),
-                new(OpCodes.Ldfld),
-                new(OpCodes.Ldloc_0),
-                new(OpCodes.Ldfld),
-                new(OpCodes.Callvirt),
-                new(OpCodes.Ret),
-            ]).CreateLabel(out var l).MatchEndBackwards([
-                new(OpCodes.Ldarg_1),
-                new(OpCodes.Callvirt),
-                new(OpCodes.Call, AccessTools.PropertyGetter(typeof(Game1), nameof(Game1.player))),
-                new(OpCodes.Ldarg_S),
-                new(OpCodes.Ldc_I4_0),
-                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(hasIngredientsForRecipe))),
-                new(OpCodes.Brfalse_S),
-            ]).Instruction.operand = l;
-
-            //Set Quality
-            matcher.Start().MatchEndForward([
-                new(OpCodes.Ldloc_1),
-                new(OpCodes.Ldloc_0),
-                new(OpCodes.Ldfld),
-                new(OpCodes.Callvirt),
-                new(OpCodes.Callvirt, AccessTools.PropertySetter(typeof(Item), nameof(Item.Stack))),
-            ]).Advance(1).InsertAndAdvance([
-                new(OpCodes.Ldloc_1),
-                new(OpCodes.Ldarg_0),
-                new(OpCodes.Call, AccessTools.PropertyGetter("Leclair.Stardew.BetterCrafting.Menus.BetterCraftingPage:ActiveRecipe")),
-                new(OpCodes.Callvirt, AccessTools.PropertyGetter("Leclair.Stardew.Common.Crafting.IRecipe:CraftingRecipe")),
-                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(getQualityForRecipe))),
-                new(OpCodes.Callvirt, AccessTools.PropertySetter(typeof(Item), nameof(Item.Quality)))
-            ]);
-
-            return matcher.Instructions();
-        }
-
-        internal static IEnumerable<CodeInstruction> BetterCraftingPage_Draw_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-        {
-            CodeMatcher matcher = new(instructions, generator);
-
-            CodeInstruction startInsert = new(OpCodes.Ldarg_1);
-
-            matcher.Start().MatchEndForward([
-                new(OpCodes.Ldloc_S),
-                new(OpCodes.Ldfld),
-                new(OpCodes.Ldstr, "ghosted"),
-                new(OpCodes.Callvirt),
-                new(OpCodes.Stloc_S),
-            ]);
-            matcher.MatchStartForward([
-                new(OpCodes.Ldarg_0),
-                new(OpCodes.Call, AccessTools.PropertyGetter("Leclair.Stardew.BetterCrafting.Menus.BetterCraftingPage:Editing")),
-                new(OpCodes.Brtrue_S),
-                new(OpCodes.Ldloc_S), 
-                new(OpCodes.Ldc_I4_0),
-                new(OpCodes.Ceq),
-                new(OpCodes.Br_S),
-            ]);
-            matcher.Instruction.MoveLabelsTo(startInsert);
-
-            matcher.InsertAndAdvance([
-                startInsert,
-                new(OpCodes.Ldloc_S, 25),
-                new(OpCodes.Ldloc_S, 26),
-                new(OpCodes.Callvirt, AccessTools.PropertyGetter("Leclair.Stardew.Common.Crafting.IRecipe:CraftingRecipe")),
-                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(drawQualityIfNeededBC)))
-            ]);
-
-            return matcher.Instructions();
-        }
-
-        internal static IEnumerable<CodeInstruction> BetterCraftingPage_CanCraft_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-        {
-            CodeMatcher matcher = new(instructions, generator);
-
-            CodeInstruction startInsert = new(OpCodes.Ldarg_1);
-
-            matcher.Start().MatchStartForward([
-                new(OpCodes.Ldarg_0),
-                new(OpCodes.Ldfld),
-                new(OpCodes.Ldarg_1),
-                new(OpCodes.Ldloc_0),
-                new(OpCodes.Callvirt),
-                new(OpCodes.Ldloc_0),
-                new(OpCodes.Ret)
-            ]).Instruction.MoveLabelsTo(startInsert);
-
-            matcher.InsertAndAdvance([
-                startInsert,
-                new(OpCodes.Callvirt, AccessTools.PropertyGetter("Leclair.Stardew.Common.Crafting.IRecipe:CraftingRecipe")),
-                new(OpCodes.Call, AccessTools.PropertyGetter(typeof(Game1), nameof(Game1.player))),
-                new(OpCodes.Ldloc_2),
-                new(OpCodes.Ldloc_0),
-                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(hasIngredientsForRecipe))),
-                new(OpCodes.Stloc_0)
-            ]);
-
-            return matcher.Instructions();
-        }
-
-        #endregion
 
         #endregion
 
@@ -380,6 +180,14 @@ namespace QualityBait
             b.Draw(Game1.mouseCursors, new(x + 12, y + 52), sourceRect, Color.White, 0.0f, new(4f), (float)(3.0 * 1.0 * (1.0 + num)), SpriteEffects.None, .97f);
         }
 
+        internal static void CraftingRecipe_CreateItem_Postfix(CraftingRecipe __instance, ref Item __result)
+        {
+            if (!isKnownRecipe(__instance) || __result is null)
+                return;
+            int quality = getQualityForRecipe(__instance);
+            __result.Quality = quality;
+        }
+
         #endregion
 
         #region Utility
@@ -440,16 +248,6 @@ namespace QualityBait
                 if (item?.ItemId == id && (!ModEntry.IConfig.ForceLowerQuality || item.Quality < baseQuality))
                     num += item.Stack;
             return num;
-        }
-
-        private static void drawQualityIfNeededBC(SpriteBatch b, ClickableTextureComponent component, CraftingRecipe recipe)
-        {
-            if (component is null || !isKnownRecipe(recipe))
-                return;
-            int quality = getQualityForRecipe(recipe);
-            Rectangle sourceRect = getSourceRectForQuality(quality);
-            float num = quality < 4 ? 0.0f : (float)((Math.Cos(Game1.currentGameTime.TotalGameTime.Milliseconds * Math.PI / 512.0) + 1.0) * 0.0500000007450581);
-            b.Draw(Game1.mouseCursors, new(component.bounds.X + 12, component.bounds.Y + 52), sourceRect, Color.White, 0.0f, new(4f), (float)(3.0 * 1.0 * (1.0 + num)), SpriteEffects.None, .97f);
         }
 
         private static bool hasIngredientsForRecipe(CraftingRecipe recipe, Farmer who, IList<Item> extraItems, bool original = false)

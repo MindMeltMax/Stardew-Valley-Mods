@@ -8,8 +8,6 @@ namespace QualityBait
 
         public bool BaitMakerQuality { get; set; } = true;
 
-        public bool EnableBetterCraftingIntegration { get; set; } = true;
-
         public bool ForceLowerQuality { get; set; } = true;
 
         [JsonIgnore]

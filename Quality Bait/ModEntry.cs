@@ -35,8 +35,6 @@ namespace QualityBait
             reloadRecipes();
         }
 
-        public static IEnumerable<string> GetRecipeKeys() => Recipes.Keys;
-
         private void onLocaleChanged(object sender, LocaleChangedEventArgs e)
         {
             reloadRecipes();
@@ -114,10 +112,7 @@ namespace QualityBait
 
         private void validateConfig()
         {
-            if (IConfig.ChancePercentage > 100)
-                IConfig.ChancePercentage = 100;
-            if (IConfig.ChancePercentage < 0)
-                IConfig.ChancePercentage = 0;
+            IConfig.ChancePercentage = IConfig.ChancePercentage > 100 ? 100 : (IConfig.ChancePercentage < 0 ? 0 : IConfig.ChancePercentage);
             Helper.WriteConfig(IConfig);
         }
 
@@ -127,13 +122,11 @@ namespace QualityBait
             if (gmcm is null)
                 return;
 
-            gmcm.Register(ModManifest, () => IConfig = new(), () => IHelper.WriteConfig(IConfig));
+            gmcm.Register(ModManifest, () => IConfig = new(), () => validateConfig());
 
             gmcm.AddNumberOption(ModManifest, () => IConfig.ChancePercentage, (x) => IConfig.ChancePercentage = x, () => ITranslations.Get("Config.ChancePercentage.Title"), () => ITranslations.Get("Config.ChancePercentage.Description"), 0, 100);
 
             gmcm.AddBoolOption(ModManifest, () => IConfig.BaitMakerQuality, (x) => IConfig.BaitMakerQuality = x, () => ITranslations.Get("Config.BaitMakerQuality.Title"), () => ITranslations.Get("Config.BaitMakerQuality.Description"));
-
-            gmcm.AddBoolOption(ModManifest, () => IConfig.EnableBetterCraftingIntegration, (x) => { IConfig.EnableBetterCraftingIntegration = x; Patches.UnPatch(ModManifest.UniqueID); Patches.Patch(ModManifest.UniqueID); }, () => ITranslations.Get("Config.BetterCraftingIntegration.Title"), () => ITranslations.Get("Config.BetterCraftingIntegration.Description"));
 
             gmcm.AddBoolOption(ModManifest, () => IConfig.ForceLowerQuality, (x) => IConfig.ForceLowerQuality = x, () => ITranslations.Get("Config.ForceLowerQuality.Title"), () => ITranslations.Get("Config.ForceLowerQuality.Description"));
         }
