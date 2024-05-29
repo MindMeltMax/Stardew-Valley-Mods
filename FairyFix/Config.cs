@@ -1,4 +1,6 @@
-﻿using System;
+﻿using StardewModdingAPI;
+using StardewModdingAPI.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,5 +15,7 @@ namespace FairyFix
         public bool ReviveDeadCrops { get; set; } = true;
 
         public bool ResetOnSeasonChange { get; set; } = true;
+
+        public KeybindList ToggleButton { get; set; } = new(SButton.U);
     }
 }

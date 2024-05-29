@@ -37,7 +37,7 @@ namespace FairyFix
             helper.Events.Display.RenderedWorld += (_, e) => DrawSelectorMode(e.SpriteBatch);
             helper.Events.Input.ButtonPressed += (_, e) =>
             {
-                if (e.Button == SButton.U)
+                if (Config.ToggleButton.JustPressed())
                     SelectorMode.Value = !SelectorMode.Value;
                 if (!SelectorMode.Value)
                     return;
@@ -77,6 +77,8 @@ namespace FairyFix
             gmcm.AddBoolOption(ModManifest, () => Config.ReviveDeadCrops, (v) => Config.ReviveDeadCrops = v, () => Helper.Translation.Get("Config.ReviveDeadCrops.Name"), () => Helper.Translation.Get("Config.ReviveDeadCrops.Description"));
 
             gmcm.AddBoolOption(ModManifest, () => Config.ResetOnSeasonChange, (v) => Config.ResetOnSeasonChange = v, () => Helper.Translation.Get("Config.ResetOnSeasonChange.Name"), () => Helper.Translation.Get("Config.ResetOnSeasonChange.Description"));
+
+            gmcm.AddKeybindList(ModManifest, () => Config.ToggleButton, (v) => Config.ToggleButton = v, () => Helper.Translation.Get("Config.ToggleButton.Name"), () => Helper.Translation.Get("Config.ToggleButton.Description"));
         }
 
         private void DrawSelectorMode(SpriteBatch b)
@@ -150,7 +152,7 @@ namespace FairyFix
 
                 if (tryGetHoeDirtAt(farm, new(current.X - 1, current.Y)) is HoeDirt ld && (selectMode != SelectionMode.ConnectedSameCrop || ld.crop?.netSeedIndex.Value == dirt.crop?.netSeedIndex.Value))
                 {
-                    if (tiles.Add(ld)) //Thanks for the heads up Crumble, definitely wouldn't have caught this myself
+                    if (tiles.Add(ld))
                         queue.Enqueue(new(current.X - 1, current.Y));
                 }
                 if (tryGetHoeDirtAt(farm, new(current.X + 1, current.Y)) is HoeDirt rd && (selectMode != SelectionMode.ConnectedSameCrop || rd.crop?.netSeedIndex.Value == dirt.crop?.netSeedIndex.Value))
@@ -189,5 +191,7 @@ namespace FairyFix
         void AddTextOption(IManifest mod, Func<string> getValue, Action<string> setValue, Func<string> name, Func<string> tooltip = null, string[] allowedValues = null, Func<string, string> formatAllowedValue = null, string fieldId = null);
 
         void AddBoolOption(IManifest mod, Func<bool> getValue, Action<bool> setValue, Func<string> name, Func<string> tooltip = null, string fieldId = null);
+
+        void AddKeybindList(IManifest mod, Func<KeybindList> getValue, Action<KeybindList> setValue, Func<string> name, Func<string> tooltip = null, string fieldId = null);
     }
 }

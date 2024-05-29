@@ -69,6 +69,11 @@ namespace Fishnets
                 original: AccessTools.Method(typeof(ParsedItemData), nameof(ParsedItemData.GetSourceRect)),
                 postfix: new(typeof(Patches), nameof(ParsedItemData_GetSourceRect_Postfix))
             );
+
+            harmony.Patch(
+                original: AccessTools.Method(typeof(GameLocation), "resetLocalState"),
+                prefix: new(typeof(Patches), nameof(GameLocation_ResetLocalState_Prefix))
+            );
         }
 
         private static void Object_CanBePlacedHere_Postfix(Object __instance, GameLocation l, Vector2 tile, ref bool __result)
@@ -108,7 +113,7 @@ namespace Fishnets
             o.setHealth(10);
             o.TileLocation = tileLocation;
             o.owner.Value = (who ?? Game1.player).UniqueMultiplayerID;
-            location.Objects.Add(tileLocation, o);
+            location.setObject(tileLocation, o);
             if (!ModEntry.NoSound)
             {
                 location.playSound("waterSlosh");
@@ -130,15 +135,14 @@ namespace Fishnets
         {
             if (__instance.ItemId != ModEntry.ObjectInfo.Id || probe)
                 return true;
-            var modData = Statics.GetModDataAt(__instance.Location, __instance.TileLocation);
-            if (dropInItem is not Object o || o.Category != Object.baitCategory || !string.IsNullOrWhiteSpace(modData?.BaitId) || (who ?? Game1.player).professions.Contains(11) || __instance.heldObject.Value is not null)
+            if (dropInItem is not Object o || o.Category != Object.baitCategory || Statics.HasModData(__instance) || (who ?? Game1.player).professions.Contains(11) || __instance.heldObject.Value is not null)
             {
                 __result = false;
                 return false;
             }
             if (!probe)
             {
-                Statics.SetModDataAt(__instance.Location, __instance.TileLocation, (modData ?? new(Statics.SetDirectionOffset(__instance.Location, __instance.TileLocation))) with { BaitId = o.ItemId, BaitQuality = o.Quality });
+                Statics.SetModData(__instance, new(o.ItemId, o.Quality));
                 __instance.modData[ModEntry.ModDataTileIndexKey] = "0,0,60";
                 __instance.Location.playSound("Ship");
             }
@@ -151,7 +155,6 @@ namespace Fishnets
             if (__instance.ItemId != ModEntry.ObjectInfo.Id || justCheckingForActivity)
                 return true;
 
-            var modData = Statics.GetModDataAt(__instance.Location, __instance.TileLocation);
             if (__instance.heldObject.Value is not null)
             {
                 Object o = __instance.heldObject.Value;
@@ -165,7 +168,7 @@ namespace Fishnets
                 if (fishData.ContainsKey(o.ItemId))
                     who.caughtFish(o.ItemId, -1, numberCaught: o.Stack);
                 __instance.readyForHarvest.Value = false;
-                Statics.SetModDataAt(__instance.Location, __instance.TileLocation, (modData ?? new(Statics.SetDirectionOffset(__instance.Location, __instance.TileLocation))) with { BaitId = "", BaitQuality = 0 });
+                Statics.RemoveModData(__instance);
                 who.animateOnce(279 + who.FacingDirection);
                 Statics.SetTileIndexData(__instance, false, 5, 60);
                 __instance.Location.playSound("fishingRodBend");
@@ -174,7 +177,7 @@ namespace Fishnets
                 __result = true;
                 return false;
             }
-            if (string.IsNullOrWhiteSpace(modData?.BaitId))
+            if (!Statics.HasModData(__instance))
             {
                 if (Game1.didPlayerJustClickAtAll(true))
                 {
@@ -188,8 +191,7 @@ namespace Fishnets
                         __result = true;
                         return false;
                     }
-                    else
-                        Game1.showRedMessage(Game1.content.LoadString("Strings\\StringsFromCSFiles:Crop.cs.588"));
+                    Game1.showRedMessage(Game1.content.LoadString("Strings\\StringsFromCSFiles:Crop.cs.588"));
                 }
             }
             __result = false;
@@ -200,10 +202,7 @@ namespace Fishnets
         {
             if (__instance.ItemId != ModEntry.ObjectInfo.Id)
                 return;
-            var modData = Statics.GetModDataAt(__instance.Location, __instance.TileLocation);
-            if (modData is null)
-                Statics.SetModDataAt(__instance.Location, __instance.TileLocation, modData = new(Statics.SetDirectionOffset(__instance.Location, __instance.TileLocation)));
-            Statics.AddOverlayTiles(__instance.Location, __instance.TileLocation, modData!.Offset);
+            Statics.OnPlace(__instance.Location, __instance.TileLocation);
         }
 
         private static void Object_UpdateWhenCurrentLocation_Postfix(Object __instance, GameTime time)
@@ -230,14 +229,12 @@ namespace Fishnets
         {
             if (__instance.ItemId != ModEntry.ObjectInfo.Id)
                 return;
-            var modData = Statics.GetModDataAt(__instance.Location, __instance.TileLocation);
-            if (!string.IsNullOrWhiteSpace(modData?.BaitId))
+            if (Statics.HasModData(__instance))
             {
                 __result = false;
                 return;
             }
             __result = true;
-            return;
         }
 
         private static void ParsedItemData_GetSourceRect_Postfix(ParsedItemData __instance, ref Rectangle __result)
@@ -246,5 +243,7 @@ namespace Fishnets
                 return;
             __result = Statics.GetSourceRectAtTileIndex(-1);
         }
+
+        private static void GameLocation_ResetLocalState_Prefix() => Statics.ClearOffsetMap();
     }
 }
