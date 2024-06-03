@@ -14,7 +14,7 @@ namespace CraftAnything
 {
     internal static class Patches
     {
-        public static void Patch(string id) //Fix hover box (why is it even fucked up?!?!?) \\Fixed
+        public static void Patch(string id)
         {
             Harmony harmony = new(id);
 
@@ -36,6 +36,11 @@ namespace CraftAnything
             harmony.Patch(
                 original: AccessTools.FirstMethod(typeof(IClickableMenu), x => x.Name == nameof(IClickableMenu.drawHoverText) && x.GetParameters().ElementAt(1).ParameterType == typeof(StringBuilder)), //If you honestly believe I'm typing out all those params...
                 prefix: new(typeof(Patches), nameof(IClickableMenu_DrawHoverText_Prefix))
+            );
+
+            harmony.Patch(
+                original: AccessTools.Method(typeof(CraftingPage), nameof(CraftingPage.draw), [typeof(SpriteBatch)]),
+                transpiler: new(typeof(Patches), nameof(CraftingPage_Draw_Transpiler))
             );
         }
 
@@ -147,6 +152,38 @@ namespace CraftAnything
             hoveredItem = null; //Because of weapon and boot icons, their hover boxes are too high, fix by setting the hoveredItem to null for custom crafting recipes
         }
 
+        internal static IEnumerable<CodeInstruction> CraftingPage_Draw_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        {
+            CodeMatcher matcher = new(instructions, generator);
+
+            CodeInstruction startInsert = new(OpCodes.Ldarg_0);
+
+            matcher.Start().MatchStartForward([
+                new(OpCodes.Ldloca_S),
+                new(OpCodes.Call),
+                new(OpCodes.Brtrue),
+                new(OpCodes.Leave_S),
+            ]).CreateLabel(out var l1);
+
+            matcher.Start().MatchStartForward([
+                new(OpCodes.Ldloc_2),
+                new(OpCodes.Ldfld),
+                new(OpCodes.Ldstr, "ghosted"),
+                new(OpCodes.Callvirt),
+                new(OpCodes.Brfalse_S),
+            ]).CreateLabel(out var l2);/*.Instruction.MoveLabelsTo(startInsert);*/
+            matcher.InsertAndAdvance([
+                startInsert,
+                new(OpCodes.Ldarg_1),
+                new(OpCodes.Ldloc_2),
+                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(drawnOverride))),
+                new(OpCodes.Brfalse_S, l2),
+                new(OpCodes.Br_S, l1)
+            ]);
+
+            return matcher.Instructions();
+        }
+
         private static ParsedItemData getDataFor(string typeDef, string itemId) => ItemRegistry.GetDataOrErrorItem(typeDef.Trim() + itemId);
 
         private static string getDataForDraw(CraftingRecipe recipe)
@@ -157,7 +194,7 @@ namespace CraftAnything
             return typeDef + indexOfMenuView;
         }
 
-        private static bool isValid(CraftingRecipe recipe, [NotNullWhen(true)] out string? typeDef)
+        internal static bool isValid(CraftingRecipe recipe, [NotNullWhen(true)] out string? typeDef)
         {
             typeDef = null;
             return !recipe.isCookingRecipe &&
@@ -167,20 +204,45 @@ namespace CraftAnything
                    typeDef != ItemRegistry.type_bigCraftable;
         }
 
-        private static bool isValid(CraftingRecipe recipe) => isValid(recipe, out _);
+        internal static bool isValid(CraftingRecipe recipe) => isValid(recipe, out _);
 
-        private static int getComponentWidth(CraftingRecipe recipe) => recipe.GetItemData().GetSourceRect().Width * 4;
+        private static int getComponentWidth(CraftingRecipe recipe)
+        {
+            if (isValid(recipe, out var typeDef) && (typeDef == ItemRegistry.type_wallpaper || typeDef == ItemRegistry.type_floorpaper))
+                return 64;
+            return recipe.GetItemData().GetSourceRect().Width * 4;
+        }
 
-        private static int getComponentHeight(CraftingRecipe recipe) => recipe.GetItemData().GetSourceRect().Height * 4;
+        private static int getComponentHeight(CraftingRecipe recipe)
+        {
+            if (isValid(recipe, out var typeDef) && (typeDef == ItemRegistry.type_wallpaper || typeDef == ItemRegistry.type_floorpaper))
+                return 64;
+            return recipe.GetItemData().GetSourceRect().Height * 4;
+        }
 
         private static void setOccupiedSpace(ClickableTextureComponent[,] spaces, int x, int y, ClickableTextureComponent component, CraftingRecipe recipe)
         {
-            if (recipe is null || !isValid(recipe))
+            if (recipe is null || !isValid(recipe, out var typeDef))
+                return;
+            if (typeDef == ItemRegistry.type_wallpaper || typeDef == ItemRegistry.type_floorpaper)
                 return;
             var sourceRect = recipe.GetItemData().GetSourceRect();
             for (int i = 0; i < sourceRect.Width / 16; i++)
                 for (int j = 0; j < sourceRect.Height / 16; j++)
                     spaces[x + i, y + j] = component;
+        }
+
+        private static bool drawnOverride(CraftingPage menu, SpriteBatch b, ClickableTextureComponent cmp)
+        {
+            if (menu is null || cmp is null)
+                return false;
+            var recipe = menu.pagesOfCraftingRecipes[menu.currentCraftingPage][cmp];
+            if (!isValid(recipe, out var typeDef) || (typeDef != ItemRegistry.type_wallpaper && typeDef != ItemRegistry.type_floorpaper))
+                return false;
+            bool hasEnoughItems = recipe.doesFarmerHaveIngredientsInInventory(ModEntry.IHelper.Reflection.GetMethod(menu, "getContainerContents")?.Invoke<IList<Item>>());
+            Color color = cmp.hoverText.Equals("ghosted") ? Color.Black * .35f : (!hasEnoughItems ? Color.DimGray * .4f : Color.White);
+            recipe.createItem().drawInMenu(b, new(cmp.bounds.X, cmp.bounds.Y), cmp.scale / 4, 1f, 0.89f, StackDrawType.Hide, color, cmp.drawShadow);
+            return true;
         }
     }
 }

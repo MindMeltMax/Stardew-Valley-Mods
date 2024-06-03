@@ -1,7 +1,7 @@
 {
   "Name": "Craft Anything Framework",
   "Author": "MindMeltMax",
-  "Version": "1.0.0",
+  "Version": "1.1.0",
   "Description": "A framework mod to make anything craftable",
   "UniqueID": "MindMeltMax.CAF",
   "EntryDll": "CraftAnything.dll",
