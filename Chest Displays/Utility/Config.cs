@@ -20,6 +20,8 @@ namespace ChestDisplays.Utility
 
         public bool ShowFirstIfNoneSelected { get; set; } = true;
 
+        public bool ShowFridgeIcon { get; set; } = false;
+
         [JsonIgnore]
         public IEnumerable<SButton> ChangeItemButtons => Utils.ParseSButton(ChangeItemKey);
     }

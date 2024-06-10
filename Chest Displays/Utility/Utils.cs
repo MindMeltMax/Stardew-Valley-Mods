@@ -77,19 +77,19 @@ namespace ChestDisplays.Utility
             }
         }
 
-        public static Vector2 GetLocationFromItemType(int itemType, int x, int y, bool isBigChest = false)
+        public static Vector2 GetLocationFromItemType(int itemType, int x, int y, bool isBigChest = false, bool isMiniFridge = false)
         {
             return itemType switch
             {
-                2 => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64) + 1f - 2, (y * 64 - 64 + 21 + 8) - (isBigChest ? 16 : 0))),
-                3 => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64), (y * 64 - 64 + 21 + 2 + 4 - 1))),
-                4 => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64) + 8, (y * 64 - 64 + 21 + 16) - (isBigChest ? 8 : 0))),
-                5 => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64), (y * 64 - 64 + 21 + 4 + 4 - 1) - (isBigChest ? 12 : 0))),
-                6 => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64) + 2f, (y * 64 - 64 + 21 + 4 + 4 - 1) - (isBigChest ? 12 : 0))),
-                7 => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64), (y * 64 - 64 + 21 + 2 + 4 - 1) - (isBigChest ? 16 : 0))),
-                8 => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64) + 10, (y * 64) - 24 - (isBigChest ? 12 : 0))),
-                9 => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64), (y * 64 - 64 + 21 + 4 + 4 - 1) - (isBigChest ? 8 : 0))),
-                _ => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64), (y * 64) - 36 - (isBigChest ? 16 : 0))),
+                2 => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64) + 1f - 2, (y * 64 - 64 + 21 + 8) - (isMiniFridge ? 24 : (isBigChest ? 16 : 0)))),
+                3 => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64), (y * 64 - 64 + 21 + 2 + 4 - 1) - (isMiniFridge ? 24 : 0))),
+                4 => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64) + 8, (y * 64 - 64 + 21 + 16) - (isMiniFridge ? 12 : (isBigChest ? 8 : 0)))),
+                5 => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64), (y * 64 - 64 + 21 + 4 + 4 - 1) - (isMiniFridge ? 18 : (isBigChest ? 12 : 0)))),
+                6 => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64) + 2f, (y * 64 - 64 + 21 + 4 + 4 - 1) - (isMiniFridge ? 18 : (isBigChest ? 12 : 0)))),
+                7 => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64), (y * 64 - 64 + 21 + 2 + 4 - 1) - (isMiniFridge ? 24 : (isBigChest ? 16 : 0)))),
+                8 => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64) + 10, (y * 64) - 24 - (isMiniFridge ? 18 : (isBigChest ? 12 : 0)))),
+                9 => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64), (y * 64 - 64 + 21 + 4 + 4 - 1) - (isMiniFridge ? 20 : (isBigChest ? 8 : 0)))),
+                _ => Game1.GlobalToLocal(Game1.viewport, new Vector2((x * 64), (y * 64) - 36 - (isMiniFridge ? 16 : (isBigChest ? 16 : 0)))),
             };
         }
 
@@ -107,7 +107,7 @@ namespace ChestDisplays.Utility
             };
         }
 
-        public static bool InvalidChest(Chest c) => c.Type != "Crafting" || c.giftbox.Value || c.Name.Contains("Fridge");
+        public static bool InvalidChest(Chest c) => c.Type != "Crafting" || c.giftbox.Value || (c.Name.Contains("Fridge") && !ModEntry.IConfig.ShowFridgeIcon);
 
         public static IEnumerable<SButton> ParseSButton(string btn)
         {

@@ -26,6 +26,8 @@ namespace ChestDisplays.Patches
                     return;
 
                 int itemType = -1;
+                bool isBigChest = __instance.SpecialChestType == Chest.SpecialChestTypes.BigChest;
+                bool isMiniFridge = __instance.QualifiedItemId == "(BC)216";
                 if (!Utils.displayItemsCache.TryGetValue(__instance, out Item? i))
                 {
                     if (__instance.Items.HasAny() && ModEntry.IConfig.ShowFirstIfNoneSelected)
@@ -34,22 +36,22 @@ namespace ChestDisplays.Patches
                         if (i is null)
                             return;
                         itemType = Utils.getItemType(i);
-                        Utils.drawItem(spriteBatch, i, itemType, Utils.GetLocationFromItemType(itemType, x, y, __instance.SpecialChestType == Chest.SpecialChestTypes.BigChest), Utils.GetDepthFromItemType(itemType, x, y));
+                        Utils.drawItem(spriteBatch, i, itemType, Utils.GetLocationFromItemType(itemType, x, y, isBigChest, isMiniFridge), Utils.GetDepthFromItemType(itemType, x, y));
                     }
                 }
                 else
                 {
                     itemType = Utils.getItemType(i);
-                    Utils.drawItem(spriteBatch, i, itemType, Utils.GetLocationFromItemType(itemType, x, y, __instance.SpecialChestType == Chest.SpecialChestTypes.BigChest), Utils.GetDepthFromItemType(itemType, x, y));
+                    Utils.drawItem(spriteBatch, i, itemType, Utils.GetLocationFromItemType(itemType, x, y, isBigChest, isMiniFridge), Utils.GetDepthFromItemType(itemType, x, y));
                 }
-                var loc = Utils.GetLocationFromItemType(1, x, y, __instance.SpecialChestType == Chest.SpecialChestTypes.BigChest);
+                var loc = Utils.GetLocationFromItemType(1, x, y, isBigChest, isMiniFridge);
                 if (new Rectangle((int)loc.X, (int)loc.Y - 1, 64, 96).Contains(Game1.getMousePosition()) && Utils.displayModDataCache.TryGetValue(__instance, out var data) && !string.IsNullOrWhiteSpace(data.Name))
                     SpriteText.drawSmallTextBubble(spriteBatch, data.Name, loc + new Vector2(32, -32), 256, (float)(0.98000001907348633 + __instance.TileLocation.X / 64 * 9.9999997473787516E-05 + __instance.TileLocation.X / 64 * 9.9999999747524271E-07));
             }
             catch(Exception ex)
             {
                 Monitor.LogOnce($"Failed drawing object at X : {x} - Y : {y}", LogLevel.Error);
-                Monitor.LogOnce($"{ex.GetType().FullName} - {ex.Message}", LogLevel.Trace); 
+                Monitor.LogOnce($"{ex.GetType().FullName} - {ex.Message}\n{ex.StackTrace}", LogLevel.Trace); 
             }
         }
     }

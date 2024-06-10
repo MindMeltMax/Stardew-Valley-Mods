@@ -121,7 +121,22 @@ namespace CraftAnything
                 new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(getComponentHeight))),
             ]).Labels.Clear();
 
-            CodeInstruction startInsert = new(OpCodes.Ldloc_S, 6);
+            matcher.Start().MatchStartForward([
+                new(OpCodes.Ldc_I4, 200),
+                new(OpCodes.Ldloc_S),
+                new(OpCodes.Add),
+                new(OpCodes.Stloc_S)
+            ]).InsertAndAdvance([
+                new(OpCodes.Ldarg_0), 
+                new(OpCodes.Ldloca_S, 6),
+                new(OpCodes.Ldloca_S, 2),
+                new(OpCodes.Ldloca_S, 3),
+                new(OpCodes.Ldloca_S, 4),
+                new(OpCodes.Ldloc_S, 9),
+                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(createNewPageIfNeeded)))
+            ]);
+
+            CodeInstruction startInsert = new(OpCodes.Ldloca_S, 6);
 
             matcher.Start().MatchEndForward([
                 new(OpCodes.Ldloc_S),
@@ -171,7 +186,7 @@ namespace CraftAnything
                 new(OpCodes.Ldstr, "ghosted"),
                 new(OpCodes.Callvirt),
                 new(OpCodes.Brfalse_S),
-            ]).CreateLabel(out var l2);/*.Instruction.MoveLabelsTo(startInsert);*/
+            ]).CreateLabel(out var l2);
             matcher.InsertAndAdvance([
                 startInsert,
                 new(OpCodes.Ldarg_1),
@@ -220,7 +235,7 @@ namespace CraftAnything
             return recipe.GetItemData().GetSourceRect().Height * 4;
         }
 
-        private static void setOccupiedSpace(ClickableTextureComponent[,] spaces, int x, int y, ClickableTextureComponent component, CraftingRecipe recipe)
+        private static void setOccupiedSpace(ref ClickableTextureComponent[,] spaces, int x, int y, ClickableTextureComponent component, CraftingRecipe recipe)
         {
             if (recipe is null || !isValid(recipe, out var typeDef))
                 return;
@@ -243,6 +258,35 @@ namespace CraftAnything
             Color color = cmp.hoverText.Equals("ghosted") ? Color.Black * .35f : (!hasEnoughItems ? Color.DimGray * .4f : Color.White);
             recipe.createItem().drawInMenu(b, new(cmp.bounds.X, cmp.bounds.Y), cmp.scale / 4, 1f, 0.89f, StackDrawType.Hide, color, cmp.drawShadow);
             return true;
+        }
+
+        private static void createNewPageIfNeeded(CraftingPage menu, ref ClickableTextureComponent[,] newPageLayout, ref Dictionary<ClickableTextureComponent, CraftingRecipe> newPage, ref int x, ref int y, CraftingRecipe recipe)
+        {
+            if (recipe is null || !isValid(recipe, out var typeDef))
+                return;
+            if (typeDef == ItemRegistry.type_wallpaper || typeDef == ItemRegistry.type_floorpaper)
+                return;
+            var sourceRect = recipe.GetItemData().GetSourceRect();
+            for (int i = 0; i < sourceRect.Width / 16; i++)
+            {
+                if (x + i >= 10)
+                {
+                    x = 0;
+                    ++y;
+                }
+                for (int j = 0; j < sourceRect.Height / 16; j++)
+                {
+                    if (y + j >= 4)
+                    {
+                        newPage = ModEntry.IHelper.Reflection.GetMethod(menu, "createNewPage").Invoke<Dictionary<ClickableTextureComponent, CraftingRecipe>>(null);
+                        newPageLayout = ModEntry.IHelper.Reflection.GetMethod(menu, "createNewPageLayout").Invoke<ClickableTextureComponent[,]>(null);
+                        x = 0;
+                        y = 0;
+                        return;
+                    }
+
+                }
+            }
         }
     }
 }
