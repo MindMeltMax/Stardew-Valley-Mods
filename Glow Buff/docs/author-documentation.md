@@ -94,7 +94,7 @@ By default the following fields are supported:
 | Glow | (Only for fields added to ObjectData) Tells the mod to load the glow buff even if it's not added to an objects list of buffs. |
 | GlowTexture | The id of the texture to load. A list of recognized values can be found [here](#textures). |
 | GlowRadius | The radius of the glow effect. |
-| GlowColorId | The rgba color value of the glow effect. (please see [notes](#colors) before using) |
+| GlowColor | The rgba color value of the glow effect. (please see [notes](#colors) before using) |
 | GlowDuration | The duration in game minutes of the buff. When added to a buff's custom fields, will be overriden when the buffs duration is not default (-2). When ommited from ObjectData, will default to lasting the rest of the day |
 | DisplayName | The translated name of the buff as it will appear in the objects buff list when hovered (if the buff is added to the objects buffs), and the name of the buff in the buffs display. |
 | Description | The translated description of the buff as it will appear in the buffs display. |
