@@ -1,0 +1,10 @@
+{
+  "Name": "Buildings Included",
+  "Author": "MindMeltMax",
+  "Version": "1.0.0",
+  "Description": "Specify buildings to be placed on a map when loaded",
+  "UniqueID": "MindMeltMax.MapBuildings",
+  "EntryDll": "MapBuildings.dll",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": [ "nexus:27359" ]
+}
