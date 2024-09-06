@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using StardewValley;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +18,10 @@ namespace MapBuildings
 
         public string Building { get; set; }
 
+        public bool Upgrade { get; set; } = false;
+
         public List<string> Animals { get; set; } = [];
+
+        public Dictionary<string, string> Objects { get; set; } = [];
     }
 }
