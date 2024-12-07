@@ -31,7 +31,7 @@ namespace ChangeFarmCaves
 
             harmony.Patch(
                 original: AccessTools.Method(typeof(Event), nameof(Event.answerDialogue)),
-                prefix: new(typeof(Patches), nameof(answerDialoguePrefix)),
+                prefix: new(AccessTools.Method(typeof(Patches), nameof(answerDialoguePrefix)), Priority.First),
                 postfix: new(typeof(Patches), nameof(answerDialoguePostfix))
             );
         }
@@ -50,7 +50,7 @@ namespace ChangeFarmCaves
         {
             try
             {
-                if (Game1.IsMasterGame && __instance.Name == "Demetrius" && (!__instance.CurrentDialogue.TryPeek(out var dialogue) || dialogue == lastDialogue) && (who.CurrentItem is null || !CanGift(__instance, who.CurrentItem, who)) && Game1.activeClickableMenu is null)
+                if (Game1.IsMasterGame && __instance.Name == "Demetrius" && who.eventsSeen.Contains("65") && (!__instance.CurrentDialogue.TryPeek(out var dialogue) || dialogue == lastDialogue) && (who.CurrentItem is null || !CanGift(__instance, who.CurrentItem, who)) && Game1.activeClickableMenu is null)
                 {
                     var responses = Game1.currentLocation.createYesNoResponses();
                     Game1.currentLocation.createQuestionDialogue(ModEntry.ITranslations.Get("Question"), responses, (who, answer) =>

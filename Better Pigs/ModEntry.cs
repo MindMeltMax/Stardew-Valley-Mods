@@ -1,11 +1,7 @@
 ﻿using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewValley;
-using StardewValley.GameData.FarmAnimals;
-using System;
-using System.Collections.Generic;
 
-namespace WinterPigs
+namespace BetterPigs
 {
     internal class ModEntry : Mod
     {

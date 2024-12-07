@@ -19,49 +19,39 @@ namespace HayCollection
 
         internal static IEnumerable<CodeInstruction> Grass_TryDropItemsOnCut_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            CodeMatcher matcher = new(instructions, generator); //My first time using a code matcher, please bear with me
-            var methInfo = AccessTools.Method(typeof(Patches), nameof(tryAddHayToInventory));
+            CodeMatcher matcher = new(instructions, generator); //My first time using a code matcher, please bear with me \\Figured it out now, still black magic but ¯\_(ツ)_/¯ Guess this means I'm a wizard now :D
+            var meth = AccessTools.Method(typeof(Patches), nameof(tryAddHayToInventory));
+            CodeInstruction nop = new(OpCodes.Nop);
 
-            matcher.Advance(171);
-            matcher.RemoveInstruction();
-            matcher.Insert(new CodeInstruction(OpCodes.Call, methInfo));
+            matcher.Start().MatchEndForward([
+                new(OpCodes.Ldloc_S),
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(TerrainFeature), nameof(TerrainFeature.Location))),
+                new(OpCodes.Call, AccessTools.Method(typeof(GameLocation), nameof(GameLocation.StoreHayInAnySilo)))
+            ]).RemoveInstruction().InsertAndAdvance([new(OpCodes.Call, meth)]);
 
-            foreach (var i in matcher.InstructionEnumeration())
-                yield return i;
+            matcher.End().MatchStartBackwards([
+                new(OpCodes.Ldstr, "(O)178"),
+                new(OpCodes.Ldc_I4_1),
+                new(OpCodes.Ldc_I4_0),
+                new(OpCodes.Ldc_I4_0),
+                new(OpCodes.Call),
+                new(OpCodes.Ldloc_S),
+                new(OpCodes.Ldnull),
+                new(OpCodes.Call),
+                new(OpCodes.Call, AccessTools.Method(typeof(Game1), nameof(Game1.addHUDMessage)))
+            ]).Instruction.MoveLabelsTo(nop);
+            matcher.RemoveInstructions(9).Insert(nop);
+
+            return matcher.Instructions();
         }
 
         internal static bool tryAddHayToInventory(int count, GameLocation currentLocation)
         {
             int remainder = GameLocation.StoreHayInAnySilo(count, currentLocation);
-            bool couldAccept = false;
-            if (remainder > 0)
-            {
-                couldAccept = Game1.player.couldInventoryAcceptThisItem(ItemRegistry.Create("(O)178", remainder)); //I'm not dropping stuff on the floor, have a silo, or have inventory space
-                if (couldAccept)
-                    tryAddItem(ItemRegistry.Create("(O)178", remainder));
-            }
-            return remainder > 0 && !couldAccept;
-        }
-
-        private static void tryAddItem(Item obj)
-        {
-            foreach (var item in Game1.player.Items)
-            {
-                if (item is not null && item.canStackWith(obj))
-                {
-                    obj.Stack = item.addToStack(obj);
-                    if (obj.Stack <= 0)
-                        return;
-                }
-            }
-            for (int i=0; i<Game1.player.Items.Count && i<Game1.player.MaxItems; i++)
-            {
-                if (Game1.player.Items[i] != null)
-                    continue;
-                obj.onDetachedFromParent();
-                Game1.player.Items[i] = obj;
-                break;
-            }
+            if (remainder > 0 && Game1.player.addItemToInventory(ItemRegistry.Create("(O)178", remainder)) is { } item)
+                Game1.createItemDebris(item, Game1.player.getStandingPosition(), Game1.player.FacingDirection, Game1.player.currentLocation);
+            return false;
         }
     }
 }

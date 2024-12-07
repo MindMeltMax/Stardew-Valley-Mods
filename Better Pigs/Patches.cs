@@ -4,11 +4,9 @@ using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Extensions;
-using System;
-using System.Collections.Generic;
 using System.Reflection.Emit;
 
-namespace WinterPigs
+namespace BetterPigs
 {
     internal static class Patches
     {
@@ -188,14 +186,17 @@ namespace WinterPigs
                 ]).CreateLabel(out var l3).MatchStartBackwards([
                     new(OpCodes.Ldarg_1),
                     new(OpCodes.Callvirt, AccessTools.Method(typeof(Building), nameof(Building.GetParentLocation))),
-                    new(OpCodes.Stloc_0),
-                ]).CreateLabel(out var l4).Start().MatchStartForward([
+                    new(OpCodes.Stloc_1),
+                ]);
+                matcher.CreateLabel(out var l4);
+                matcher.Start().MatchStartForward([
                     new(OpCodes.Ldarg_1),
                     new(OpCodes.Brfalse),
                     new(OpCodes.Ldsfld),
                     new(OpCodes.Ldc_R8),
                     new(OpCodes.Call)
-                ]).Instruction.MoveLabelsTo(startInsert);
+                ]);
+                matcher.Instruction.MoveLabelsTo(startInsert);
                 matcher.InsertAndAdvance([
                     startInsert,
                     new(OpCodes.Ldarg_1),
@@ -337,7 +338,7 @@ namespace WinterPigs
                 return 100;
             if (isSnowing || isGreenRain)
                 return 75;
-            return (byte)(isWinter ? 50 : (isRaining ? 25 : 0));
+            return (byte)(isWinter ? 50 : isRaining ? 25 : 0);
         }
 
         private static int getFriendshipDecreaseFromWeather(GameLocation environment)
@@ -352,7 +353,7 @@ namespace WinterPigs
                 return 25;
             if (isSnowing || isGreenRain)
                 return 15;
-            return isWinter ? 10 : (isRaining ? 5 : 0);
+            return isWinter ? 10 : isRaining ? 5 : 0;
         }
     }
 }

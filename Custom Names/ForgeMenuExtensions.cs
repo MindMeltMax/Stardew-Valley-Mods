@@ -6,6 +6,7 @@ using StardewValley;
 using StardewValley.Enchantments;
 using StardewValley.Menus;
 using StardewValley.Objects;
+using StardewValley.Objects.Trinkets;
 using System.Reflection;
 using System.Reflection.Emit;
 

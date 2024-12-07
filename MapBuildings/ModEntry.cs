@@ -9,6 +9,8 @@ using StardewValley.Locations;
 using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
 using System.Globalization;
+using System.Text;
+using System.Xml;
 using SObject = StardewValley.Object;
 
 namespace MapBuildings
@@ -40,7 +42,11 @@ namespace MapBuildings
             ReloadBuildings();
         }
 
-        private void onSaveLoad(object? sender, SaveLoadedEventArgs e) => ReloadBuildings();
+        private void onSaveLoad(object? sender, SaveLoadedEventArgs e)
+        {
+            ParseOldBuildings();
+            ReloadBuildings();
+        }
 
         private void onAssetInvalidated(object? sender, AssetsInvalidatedEventArgs e)
         {
@@ -87,6 +93,16 @@ namespace MapBuildings
                             }
                         }
 
+                        string uniqueId = buildUniqueID(item.Key, building);
+                        if (location.modData.TryGetValue(ModManifest.UniqueID + "/Placed", out string data))
+                        {
+                            if (data.Contains(uniqueId, StringComparison.OrdinalIgnoreCase))
+                            {
+                                Monitor.Log($"Tried to place building with id {building.Building} in {building.Location} at tile {{ X:{building.X}, Y:{building.Y} }} but it had already been placed before.");
+                                continue;
+                            }
+                        }
+
                         if (!buildingData.TryGetValue(building.Building, out var blueprint))
                             throw new KeyNotFoundException($"Requested building {building.Building} was not found in existing building data.");
 
@@ -109,11 +125,11 @@ namespace MapBuildings
                         }
                         else
                         {
-                            var buildingRect = new Rectangle(new(building.X, building.Y), blueprint.Size);
+                            Rectangle buildingRect = new(new(building.X, building.Y), blueprint.Size);
                             if (IsAreaOccupied(location, new(building.X, building.Y), blueprint.Size, out var removeableObjects, out var removeableTerrainFeatures) && !building.Upgrade)
                                 throw new($"The building ({building.Building}) to be placed in {building.Location} at tile {{ X:{building.X}, Y:{building.Y} }} with a tile size of {{ W:{blueprint.Size.X}, H:{blueprint.Size.Y} }} could not be placed since it's area overlaps with non-removable terrain or objects.");
 
-                            Building structure = new(building.Building, new(building.X, building.Y));
+                            Building structure = Building.CreateInstanceFromId(building.Building, new(building.X, building.Y));
                             structure.FinishConstruction(true);
                             structure.LoadFromBuildingData(blueprint, false, true);
                             structure.modData[ModManifest.UniqueID + "_PlacedBy"] = item.Key;
@@ -196,6 +212,11 @@ namespace MapBuildings
                             }
                         }
 
+                        if (location.modData.ContainsKey(ModManifest.UniqueID + "/Placed"))
+                            location.modData[ModManifest.UniqueID + "/Placed"] += $", {uniqueId}";
+                        else
+                            location.modData[ModManifest.UniqueID + "/Placed"] = uniqueId;
+
                         Monitor.Log($"Placed {building.Building} in {building.Location} at {{ X:{building.X}, Y:{building.Y} }}");
                         loaded++;
                     }
@@ -208,6 +229,30 @@ namespace MapBuildings
                 }
 
                 Monitor.Log($"Finished loading buildings for {item.Key}. {loaded} buildings were loaded.");
+            }
+        }
+
+        public void ParseOldBuildings() //Gonna at least try to prevent anymore duplication
+        {
+            var buildings = Helper.GameContent.Load<Dictionary<string, List<MapBuilding>>>(ModManifest.UniqueID + "/Buildings");
+            var buildingData = DataLoader.Buildings(Game1.content);
+
+            foreach (var item in buildings)
+            {
+                foreach (var data in item.Value)
+                {
+                    var location = Game1.RequireLocation(data.Location);
+                    if (location.getBuildingAt(new(data.X, data.Y)) is not { } building || !isBuildingOrUpgrade(buildingData, building, data))
+                        continue;
+                    if (!building.modData.TryGetValue(ModManifest.UniqueID + "_PlacedBy", out string placer) || placer != item.Key)
+                        continue;
+
+                    string uniqueId = buildUniqueID(item.Key, data);
+                    if (location.modData.ContainsKey(ModManifest.UniqueID + "/Placed"))
+                        location.modData[ModManifest.UniqueID + "/Placed"] += $", {uniqueId}";
+                    else
+                        location.modData[ModManifest.UniqueID + "/Placed"] = uniqueId;
+                }
             }
         }
 
@@ -272,6 +317,28 @@ namespace MapBuildings
             if (values.Length == 1)
                 return new Vector2(int.Parse(values[0]));
             return new Vector2(int.Parse(values[0]), int.Parse(values[1]));
+        }
+
+        private string buildUniqueID(string key, MapBuilding building)
+        {
+            return new StringBuilder(key).Append('_')
+                                         .Append(building.Building)
+                                         .Append('_')
+                                         .Append(building.Location)
+                                         .Append('_')
+                                         .Append($"{building.X}-{building.Y}")
+                                         .Append('_')
+                                         .ToString();
+        }
+
+        private bool isBuildingOrUpgrade(Dictionary<string, BuildingData> buildings, Building building, MapBuilding data)
+        {
+            if (building.buildingType.Value == data.Building)
+                return true;
+            foreach (var item in buildings)
+                if (building.buildingType.Value == item.Key && item.Value.BuildingToUpgrade == data.Building)
+                    return true;
+            return false;
         }
     }
 }

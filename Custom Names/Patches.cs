@@ -7,6 +7,7 @@ using StardewValley.BellsAndWhistles;
 using StardewValley.Companions;
 using StardewValley.Menus;
 using StardewValley.Objects;
+using StardewValley.Objects.Trinkets;
 using System.Reflection;
 using System.Reflection.Emit;
 

@@ -1,10 +1,7 @@
 ﻿using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
 using StardewValley;
-using StardewValley.Extensions;
-using StardewValley.ItemTypeDefinitions;
 using StardewValley.Menus;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
@@ -17,16 +14,6 @@ namespace CraftAnything
         public static void Patch(string id)
         {
             Harmony harmony = new(id);
-
-            harmony.Patch(
-                original: AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.GetItemData)),
-                prefix: new(typeof(Patches), nameof(CraftingRecipe_GetItemData_Prefix))
-            );
-
-            harmony.Patch(
-                original: AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.drawMenuView)),
-                transpiler: new(typeof(Patches), nameof(CraftingRecipe_DrawMenuView_Transpiler))
-            );
 
             harmony.Patch(
                 original: AccessTools.Method(typeof(CraftingPage), "layoutRecipes"),
@@ -42,68 +29,16 @@ namespace CraftAnything
                 original: AccessTools.Method(typeof(CraftingPage), nameof(CraftingPage.draw), [typeof(SpriteBatch)]),
                 transpiler: new(typeof(Patches), nameof(CraftingPage_Draw_Transpiler))
             );
-        }
 
-        internal static bool CraftingRecipe_GetItemData_Prefix(CraftingRecipe __instance, bool useFirst, ref ParsedItemData __result)
-        {
-            try
-            {
-                if (!isValid(__instance, out var typeDef))
-                    return true;
-                string? str = useFirst ? __instance.itemToProduce.FirstOrDefault() : Game1.random.ChooseFrom(__instance.itemToProduce);
-                __result = ItemRegistry.GetDataOrErrorItem(typeDef.Trim() + str);
-                return false;
-            }
-            catch (Exception ex)
-            {
-                ModEntry.IMonitor.Log($"Failed Patching {nameof(CraftingRecipe.GetItemData)}", LogLevel.Error);
-                ModEntry.IMonitor.Log($"[{nameof(CraftingRecipe_GetItemData_Prefix)}] {ex.GetType().Name} - {ex.Message}\n{ex.StackTrace}");
-            }
-            return true;
-        }
-
-        internal static IEnumerable<CodeInstruction> CraftingRecipe_DrawMenuView_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-        {
-            CodeMatcher matcher = new(instructions, generator);
-
-            matcher.Start().MatchStartForward([
-                new(OpCodes.Ldarg_0),
-                new(OpCodes.Ldfld),
-                new(OpCodes.Brtrue_S),
-                new(OpCodes.Ldarg_0),
-                new(OpCodes.Callvirt),
-                new(OpCodes.Br_S),
-                new(OpCodes.Ldstr, "(BC)"),
-                new(OpCodes.Ldarg_0),
-                new(OpCodes.Callvirt),
-                new(OpCodes.Call),
-                new(OpCodes.Call),
-                new(OpCodes.Dup)
-            ]).Advance(1).RemoveInstructions(9).InsertAndAdvance([
-                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(getDataForDraw)))
-            ]).Labels.Clear();
-
-            return matcher.Instructions();
+            harmony.Patch(
+                original: AccessTools.Method(typeof(CraftingRecipe), nameof(CraftingRecipe.drawRecipeDescription)),
+                transpiler: new(typeof(Patches), nameof(CraftingRecipe_DrawRecipeDescription_Transpiler))
+            );
         }
 
         internal static IEnumerable<CodeInstruction> CraftingPage_LayoutRecipes_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
             CodeMatcher matcher = new(instructions, generator);
-
-            matcher.Start().MatchStartForward([
-                new(OpCodes.Ldloc_S),
-                new(OpCodes.Ldfld),
-                new(OpCodes.Brtrue_S),
-                new(OpCodes.Ldloc_S),
-                new(OpCodes.Br_S),
-                new(OpCodes.Ldstr, "(BC)"),
-                new(OpCodes.Ldloc_S),
-                new(OpCodes.Call),
-                new(OpCodes.Call),
-                new(OpCodes.Dup),
-            ]).Advance(1).RemoveInstructions(7).InsertAndAdvance([
-                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(getDataForDraw)))
-            ]).Labels.Clear();
 
             matcher.Start().MatchEndForward([
                 new(OpCodes.Ldarg_0),
@@ -113,13 +48,12 @@ namespace CraftAnything
                 new(OpCodes.Mul),
                 new(OpCodes.Add),
                 new(OpCodes.Ldc_I4_S)
-            ]);
-            matcher.RemoveInstructions(7).InsertAndAdvance([
+            ]).RemoveInstructions(7).InsertAndAdvance([
                 new(OpCodes.Ldloc_S, 9),
                 new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(getComponentWidth))),
                 new(OpCodes.Ldloc_S, 9),
-                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(getComponentHeight))),
-            ]).Labels.Clear();
+                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(getComponentHeight)))
+            ]);
 
             matcher.Start().MatchStartForward([
                 new(OpCodes.Ldc_I4, 200),
@@ -127,7 +61,7 @@ namespace CraftAnything
                 new(OpCodes.Add),
                 new(OpCodes.Stloc_S)
             ]).InsertAndAdvance([
-                new(OpCodes.Ldarg_0), 
+                new(OpCodes.Ldarg_0),
                 new(OpCodes.Ldloca_S, 6),
                 new(OpCodes.Ldloca_S, 2),
                 new(OpCodes.Ldloca_S, 3),
@@ -152,7 +86,7 @@ namespace CraftAnything
                 startInsert,
                 new(OpCodes.Ldloc_3),
                 new(OpCodes.Ldloc_S, 4),
-                new(OpCodes.Ldloc_S, 14),
+                new(OpCodes.Ldloc_S, 13),
                 new(OpCodes.Ldloc_S, 9),
                 new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(setOccupiedSpace)))
             ]);
@@ -199,22 +133,57 @@ namespace CraftAnything
             return matcher.Instructions();
         }
 
-        private static ParsedItemData getDataFor(string typeDef, string itemId) => ItemRegistry.GetDataOrErrorItem(typeDef.Trim() + itemId);
-
-        private static string getDataForDraw(CraftingRecipe recipe)
+        internal static IEnumerable<CodeInstruction> CraftingRecipe_DrawRecipeDescription_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            string indexOfMenuView = recipe.getIndexOfMenuView();
-            if (!isValid(recipe, out var typeDef))
-                return recipe.bigCraftable ? "(BC)" + indexOfMenuView : indexOfMenuView;
-            return typeDef + indexOfMenuView;
+            CodeMatcher matcher = new(instructions, generator);
+
+            List<CodeInstruction> insert = [
+                new(OpCodes.Ldarg_1),
+                new(OpCodes.Ldarg_2),
+                new(OpCodes.Ldloc_1),
+                new(OpCodes.Ldloc_S, 13),
+                new(OpCodes.Ldloc_S, 5),
+                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(drawnOverrideIngredient))),
+                new(OpCodes.Brtrue_S)
+            ];
+            matcher.Start().MatchStartForward([
+                new(OpCodes.Callvirt),
+                new(OpCodes.Ldloc_S),
+                new(OpCodes.Ldarg_1),
+                new(OpCodes.Ldarg_2),
+                new(OpCodes.Ldfld, AccessTools.Field(typeof(Vector2), nameof(Vector2.X)))
+            ]).Advance(1).CreateLabel(out var l).MatchStartBackwards([
+                new(OpCodes.Ldarg_1),
+                new(OpCodes.Ldloc_S),
+                new(OpCodes.Ldarg_2),
+                new(OpCodes.Ldfld, AccessTools.Field(typeof(Vector2), nameof(Vector2.X))),
+                new(OpCodes.Ldc_R4),
+                new(OpCodes.Add),
+                new(OpCodes.Ldarg_2),
+                new(OpCodes.Ldfld, AccessTools.Field(typeof(Vector2), nameof(Vector2.Y))),
+                new(OpCodes.Ldc_R4),
+                new(OpCodes.Add),
+            ]).Instruction.MoveLabelsTo(insert[0]);
+            insert[^1].operand = l;
+            matcher.InsertAndAdvance(insert);
+
+            return matcher.Instructions();
+        }
+
+        internal static bool HasValidTypeDef(CraftingRecipe recipe, [NotNullWhen(true)] out string? typeDef)
+        {
+            return (CraftingRecipe.craftingRecipes.TryGetValue(recipe.name, out string? data) &&
+                    ArgUtility.TryGet(data.Split('/'), 6, out typeDef, out _, false) || 
+                    (ArgUtility.TryGet(data.Split('/'), 2, out string itemId, out _, false) && 
+                    typeDefFromId(itemId, out typeDef))) ||
+                    ModEntry.CraftResultTypeCache.TryGetValue(recipe.name, out typeDef);
         }
 
         internal static bool isValid(CraftingRecipe recipe, [NotNullWhen(true)] out string? typeDef)
         {
             typeDef = null;
             return !recipe.isCookingRecipe &&
-                   CraftingRecipe.craftingRecipes.TryGetValue(recipe.name, out string? data) &&
-                   ArgUtility.TryGet(data.Split('/'), 6, out typeDef, out _, false) &&
+                   HasValidTypeDef(recipe, out typeDef) &&
                    typeDef != ItemRegistry.type_object &&
                    typeDef != ItemRegistry.type_bigCraftable;
         }
@@ -287,6 +256,24 @@ namespace CraftAnything
 
                 }
             }
+        }
+
+        private static bool drawnOverrideIngredient(SpriteBatch b, Vector2 position, int ingredientIndex, float scale, string itemId)
+        {
+            if (!ItemRegistry.IsQualifiedItemId(itemId) || (!itemId.StartsWith(ItemRegistry.type_wallpaper) && !itemId.StartsWith(ItemRegistry.type_floorpaper)))
+                return false;
+
+            ItemRegistry.Create(itemId).drawInMenu(b, new Vector2(position.X - 12f, position.Y + 64f + (ingredientIndex * 64 / 2) + (ingredientIndex + 4) - 16f), scale * .75f, 1f, 0.86f, StackDrawType.Hide, Color.White, false);
+            return true;
+        }
+
+        private static bool typeDefFromId(string itemId, out string? typeDef)
+        {
+            typeDef = "";
+            if (!ItemRegistry.IsQualifiedItemId(itemId))
+                return false;
+            typeDef = itemId.Split(')')[0] + ')';
+            return true;
         }
     }
 }
