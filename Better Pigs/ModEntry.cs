@@ -14,6 +14,8 @@ namespace BetterPigs
             Helper.Events.GameLoop.GameLaunched += onGameLaunched;
         }
 
+        public override object? GetApi() => new API();
+
         private void onGameLaunched(object? sender, GameLaunchedEventArgs e)
         {
             Patches.Patch(Monitor, Helper);

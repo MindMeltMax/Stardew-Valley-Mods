@@ -21,10 +21,9 @@ namespace BetterPigs
 
             Harmony harmony = new(helper.ModRegistry.ModID);
 
-
             harmony.Patch(
                 original: AccessTools.Method(typeof(FarmAnimal), nameof(FarmAnimal.behaviors)),
-                transpiler: new(typeof(Patches), nameof(FarmAnimal_Behaviors_Transpiler))
+                transpiler: new(AccessTools.Method(typeof(Patches), nameof(FarmAnimal_Behaviors_Transpiler)), Priority.First)
             );
 
             harmony.Patch(
@@ -280,7 +279,7 @@ namespace BetterPigs
             return ModEntry.IConfig.PigAnimalCrackerMultiplier;
         }
 
-        private static bool canGoOutside(FarmAnimal animal, Building currentBuilding, GameLocation environment)
+        internal static bool canGoOutside(FarmAnimal animal, Building currentBuilding, GameLocation environment)
         {
             if (ModEntry.IConfig.AnimalsStayInside.Contains(animal.type.Value) || currentBuilding is null || !Game1.random.NextBool(0.002) || !currentBuilding.animalDoorOpen.Value || Game1.timeOfDay >= 1630 || environment.farmers.Any())
                 return false;
