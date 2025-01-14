@@ -1,0 +1,9 @@
+{
+    "Config.TotalValue.Title": "Exibir Valor Total",
+    "Config.TotalValue.Description": "Exibe um banner na parte superior do inventário da caixa de remessas com o valor total de todos os itens",
+    "Config.MiniTotalValue.Title": "Mostrar Valor Total (Mini Caixa)",
+    "Config.MiniTotalValue.Description": "Exibe o mesmo banner que no inventário regular na mini caixa de remessas",
+    "Config.InvertScroll.Title": "Inverter Roda de Rolagem",
+    "Config.InvertScroll.Description": "Inverte a direção da roda de rolagem ao rolar pelo inventário",
+    "Menu.TotalValue": "Valor Total : "
+}
