@@ -14,6 +14,8 @@ namespace BetterPigs
         private static IModHelper IHelper;
         private static string ModDataHappinessKey => $"{IHelper.ModRegistry.ModID}.Happiness";
 
+        private static bool HasEAC => IHelper.ModRegistry.IsLoaded("selph.ExtraAnimalConfig");
+
         public static void Patch(IMonitor monitor, IModHelper helper)
         {
             IMonitor = monitor;
@@ -23,7 +25,7 @@ namespace BetterPigs
 
             harmony.Patch(
                 original: AccessTools.Method(typeof(FarmAnimal), nameof(FarmAnimal.behaviors)),
-                transpiler: new(AccessTools.Method(typeof(Patches), nameof(FarmAnimal_Behaviors_Transpiler)), Priority.First)
+                transpiler: new(AccessTools.Method(typeof(Patches), nameof(FarmAnimal_Behaviors_Transpiler)))
             );
 
             harmony.Patch(
@@ -51,34 +53,60 @@ namespace BetterPigs
         {
             CodeMatcher matcher = new(instructions);
 
-            try
+            if (HasEAC)
             {
-                matcher.Start().MatchStartForward([
-                    new(OpCodes.Ldloc_0),
-                    new(OpCodes.Ldfld),
-                    new(OpCodes.Callvirt, AccessTools.Method(typeof(GameLocation), nameof(GameLocation.IsRainingHere))),
-                    new(OpCodes.Brtrue)
-                ]).RemoveInstructions(4);
+                try
+                {
+                    matcher.Start().MatchEndForward([
+                        new(OpCodes.Call, AccessTools.Method("Selph.StardewMods.ExtraAnimalConfig.AnimalUtils:AnimalAffectedByRain"))
+                    ]).Advance(1).InsertAndAdvance([
+                        new(OpCodes.Ldarg_0),
+                        new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(currentWeatherAffects)))
+                    ]).MatchEndForward([
+                        new(OpCodes.Call, AccessTools.Method("Selph.StardewMods.ExtraAnimalConfig.AnimalUtils:AnimalAffectedByWinter"))
+                    ]).Advance(1).InsertAndAdvance([
+                        new(OpCodes.Ldarg_0),
+                        new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(currentWeatherAffects)))
+                    ]);
+                }
+                catch (Exception ex)
+                {
+                    IMonitor.Log($"Failed to create ExtraAnimalConfigs specific patches, compatibility will be limited", LogLevel.Error);
+                    IMonitor.Log($"[{nameof(FarmAnimal_Behaviors_Transpiler)}] {ex.GetType().Name} - {ex.Message}\n{ex.StackTrace}");
+                }
             }
-            catch (Exception ex)
+            else
             {
-                IMonitor.Log($"Failed to find rain flag, rain behavior was not changed", LogLevel.Error);
-                IMonitor.Log($"[{nameof(FarmAnimal_Behaviors_Transpiler)}] {ex.GetType().Name} - {ex.Message}\n{ex.StackTrace}");
+                try
+                {
+                    matcher.Start().MatchStartForward([
+                        new(OpCodes.Ldloc_0),
+                        new(OpCodes.Ldfld),
+                        new(OpCodes.Callvirt, AccessTools.Method(typeof(GameLocation), nameof(GameLocation.IsRainingHere))),
+                        new(OpCodes.Brtrue)
+                    ]).RemoveInstructions(4);
+                }
+                catch (Exception ex)
+                {
+                    IMonitor.Log($"Failed to find rain flag, rain behavior was not changed", LogLevel.Error);
+                    IMonitor.Log($"[{nameof(FarmAnimal_Behaviors_Transpiler)}] {ex.GetType().Name} - {ex.Message}\n{ex.StackTrace}");
+                }
+                try
+                {
+                    matcher.Start().MatchStartForward([
+                        new(OpCodes.Ldloc_0),
+                        new(OpCodes.Ldfld),
+                        new(OpCodes.Callvirt, AccessTools.Method(typeof(GameLocation), nameof(GameLocation.IsWinterHere))),
+                        new(OpCodes.Brtrue),
+                    ]).RemoveInstructions(4);
+                }
+                catch (Exception ex)
+                {
+                    IMonitor.Log($"Failed to find winter flag, winter behavior was not changed", LogLevel.Error);
+                    IMonitor.Log($"[{nameof(FarmAnimal_Behaviors_Transpiler)}] {ex.GetType().Name} - {ex.Message}\n{ex.StackTrace}");
+                }
             }
-            try
-            {
-                matcher.Start().MatchStartForward([
-                    new(OpCodes.Ldloc_0),
-                    new(OpCodes.Ldfld),
-                    new(OpCodes.Callvirt, AccessTools.Method(typeof(GameLocation), nameof(GameLocation.IsWinterHere))),
-                    new(OpCodes.Brtrue),
-                ]).RemoveInstructions(4);
-            }
-            catch (Exception ex)
-            {
-                IMonitor.Log($"Failed to find winter flag, winter behavior was not changed", LogLevel.Error);
-                IMonitor.Log($"[{nameof(FarmAnimal_Behaviors_Transpiler)}] {ex.GetType().Name} - {ex.Message}\n{ex.StackTrace}");
-            }
+            
             try
             {
                 matcher.Start().MatchEndForward([
@@ -283,11 +311,17 @@ namespace BetterPigs
         {
             if (ModEntry.IConfig.AnimalsStayInside.Contains(animal.type.Value) || currentBuilding is null || !Game1.random.NextBool(0.002) || !currentBuilding.animalDoorOpen.Value || Game1.timeOfDay >= 1630 || environment.farmers.Any())
                 return false;
-            bool isRaining = environment.IsRainingHere();
-            bool isWinter = environment.IsWinterHere();
-            bool isLightning = environment.IsLightningHere();
-            bool isGreenRain = environment.IsGreenRainingHere();
-            bool isSnowing = environment.IsSnowingHere();
+            return CanAnimalGoOutsideInThisWeather(animal);
+        }
+
+        internal static bool CanAnimalGoOutsideInThisWeather(FarmAnimal animal)
+        {
+            var parentLocation = animal.home.GetParentLocation();
+            bool isRaining = parentLocation.IsRainingHere();
+            bool isWinter = parentLocation.IsWinterHere();
+            bool isLightning = parentLocation.IsLightningHere();
+            bool isGreenRain = parentLocation.IsGreenRainingHere();
+            bool isSnowing = parentLocation.IsSnowingHere();
             if (ModEntry.IConfig.AnimalsGoOutsideHorribleWeather.Contains(animal.type.Value))
                 return true;
             if (ModEntry.IConfig.AnimalsGoOutsideBadWeather.Contains(animal.type.Value) && !isLightning && !isGreenRain && !isSnowing)
@@ -310,16 +344,6 @@ namespace BetterPigs
                 return;
             byte happiness = getHappinessDecreaseFromWeather(environment);
             int friendship = getFriendshipDecreaseFromWeather(environment);
-            /*if (Game1.currentSeason.Equals("winter"))
-            {
-                happiness = (byte)(Game1.isSnowing ? 75 : 50);
-                friendship = Game1.isSnowing ? 15 : 10;
-            }
-            else if (Game1.isRaining)
-            {
-                happiness = 25;
-                friendship = 5;
-            }*/
             animal.happiness.Value = (byte)Math.Max(0, animal.happiness.Value - happiness);
             animal.friendshipTowardFarmer.Value = Math.Max(0, animal.friendshipTowardFarmer.Value - friendship);
             animal.modData.Add(ModDataHappinessKey, "1");
@@ -354,5 +378,7 @@ namespace BetterPigs
                 return 15;
             return isWinter ? 10 : isRaining ? 5 : 0;
         }
+
+        private static bool currentWeatherAffects(bool eacValue, FarmAnimal animal) => !CanAnimalGoOutsideInThisWeather(animal) && eacValue;
     }
 }

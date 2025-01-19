@@ -2,11 +2,10 @@
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using StardewModdingAPI.Utilities;
 using StardewValley.Menus;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MPInfo
 {
@@ -21,55 +20,110 @@ namespace MPInfo
     internal class ModEntry : Mod
     {
         internal static ModEntry Instance;
-        internal static Config Config = null!;
+        internal static Config Config;
 
-        private readonly PerScreen<PlayerInfo> infoCache = new(() => new());
+        public bool IsEnabled => Config.Enabled;
+        public Dictionary<long, int> PingsSinceLastPong { get; } = [];
+        public Dictionary<long, PlayerInfo?> PlayerData { get; } = [];
 
-        private bool enabled = true;
-
-        public bool IsEnabled => enabled;
-        private PerScreen<int> playersOnline = new(() => -1); //Might not need perscreen, since it's only set and checked by the host, will probably make int in next update
+        public List<long> TraditionalStaminaReporting { get; } = [];
 
         public override void Entry(IModHelper helper)
         {
             Instance = this;
-            PlayerInfoBox.Crown = helper.ModContent.Load<Texture2D>("Assets/Crown.png");
-            Config = helper.ReadConfig<Config>();
-            enabled = Config.Enabled;
+            Config = Helper.ReadConfig<Config>();
 
-            helper.Events.GameLoop.GameLaunched += OnGameLaunched;
+            Helper.Events.GameLoop.SaveLoaded += onSaveLoaded;
+            Helper.Events.GameLoop.GameLaunched += onGameLaunch;
+            Helper.Events.GameLoop.ReturnedToTitle += onReturnToTitle;
+            Helper.Events.GameLoop.DayStarted += onDayStarted;
+            Helper.Events.GameLoop.OneSecondUpdateTicked += onOneSecondTicked;
 
-            helper.Events.Input.ButtonPressed += OnButtonPressed;
+            Helper.Events.Input.ButtonPressed += onButtonPressed;
 
-            helper.Events.Multiplayer.ModMessageReceived += OnMultiplayerDataReceived;
+            Helper.Events.Multiplayer.PeerConnected += onPlayerJoin;
+            Helper.Events.Multiplayer.PeerDisconnected += onPlayerLeave;
+            Helper.Events.Multiplayer.ModMessageReceived += onModMessageReceived;
 
-            helper.Events.GameLoop.DayStarted += OnDayStarted;
-            helper.Events.GameLoop.DayEnding += (_, _) => Game1.player.modData.Remove(ModManifest.UniqueID);
-            helper.Events.GameLoop.ReturnedToTitle += (_, _) => playersOnline.Value = -1;
-
-            Patches.Apply(ModManifest.UniqueID);
+            Helper.Events.Content.AssetRequested += onAssetRequested;
+            Helper.Events.Content.AssetsInvalidated += onAssetInvalidated;
         }
 
-        internal void ForceUpdate()
+        public void Toggle(bool value)
         {
-            infoCache.Value = new(Game1.player);
-            Game1.player.modData[ModManifest.UniqueID] = infoCache.Value.Serialize();
-            Helper.Multiplayer.SendMessage("", "MPInfo.ForceUpdate", [ModManifest.UniqueID]);
+            Config.Enabled = value;
             ResetDisplays();
         }
 
-        private void ResetDisplays()
+        public void Ping()
         {
-            Game1.onScreenMenus = new List<IClickableMenu>(Game1.onScreenMenus.Where(x => x is not PlayerInfoBox));
-            if (Config.ShowSelf)
-                Game1.onScreenMenus.Add(new PlayerInfoBox(Game1.player));
-            foreach (var player in Helper.Multiplayer.GetConnectedPlayers())
-                Game1.onScreenMenus.Add(new PlayerInfoBox(Game1.getFarmer(player.PlayerID)));
-            PlayerInfoBox.RedrawAll();
+            if (!Context.IsWorldReady)
+                return;
+            List<long> playersToPing = [];
+            foreach (var p in PingsSinceLastPong.Keys)
+            {
+                if (PingsSinceLastPong[p] > 30 || p == Game1.player.UniqueMultiplayerID)
+                    continue;
+                if (PingsSinceLastPong[p] == 30)
+                {
+                    Monitor.Log($"Send 30 packets to {Game1.GetPlayer(p)?.Name ?? "Player " + p.ToString()} but they still haven't responded. Messaging suspended");
+                    PingsSinceLastPong[p] = 31;
+                    TraditionalStaminaReporting.Add(p);
+                    continue;
+                }
+                PingsSinceLastPong[p]++;
+                playersToPing.Add(p);
+            }
+            PlayerInfo packet = new(Game1.player);
+            Helper.Multiplayer.SendMessage(packet.Serialize(), "MPInfo.Ping", [ModManifest.UniqueID], [.. playersToPing]);
         }
 
-        private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
+        public void Pong(long sender)
         {
+            if (!Context.IsWorldReady)
+                return;
+            PlayerInfo packet = new(Game1.player);
+            Helper.Multiplayer.SendMessage(packet.Serialize(), "MPInfo.Pong", [ModManifest.UniqueID], [sender]);
+        }
+
+        public void ForceUpdate()
+        {
+            Monitor.Log("Forcing an update, Re-enabling pings for all players");
+            foreach (var p in PingsSinceLastPong.Keys)
+            {
+                PingsSinceLastPong[p] = 0;
+                PlayerData[p] = new(Game1.GetPlayer(p));
+            }
+            TraditionalStaminaReporting.Clear();
+            Ping();
+
+        }
+
+        public void ResetDisplays()
+        {
+            Game1.onScreenMenus = new List<IClickableMenu>(Game1.onScreenMenus.Where(x => x is not PlayerInfoBox));
+            int beforeIndex = Game1.onScreenMenus.IndexOf(Game1.onScreenMenus.FirstOrDefault(x => x is Toolbar));
+            foreach (var p in PlayerData.Keys)
+            {
+                if (beforeIndex != -1)
+                    Game1.onScreenMenus.Insert(beforeIndex, new PlayerInfoBox(Game1.GetPlayer(p)));
+                else
+                    Game1.onScreenMenus.Add(new PlayerInfoBox(Game1.GetPlayer(p)));
+            }
+            PlayerInfoBox.FixPositions();
+        }
+
+        private void onSaveLoaded(object? sender, SaveLoadedEventArgs e)
+        {
+            PingsSinceLastPong[Game1.player.UniqueMultiplayerID] = 0;
+            PlayerData[Game1.player.UniqueMultiplayerID] = new(Game1.player);
+        }
+
+        private void onGameLaunch(object? sender, GameLaunchedEventArgs e)
+        {
+            Patches.Apply(ModManifest.UniqueID);
+            PlayerInfoBox.Crown = Game1.content.Load<Texture2D>("MPInfo/Crown");
+
             var configMenu = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
             if (configMenu is null)
                 return;
@@ -85,13 +139,9 @@ namespace MPInfo
                 name: () => Helper.Translation.Get("Config.Enabled.Name"),
                 tooltip: () => "",
                 getValue: () => Config.Enabled,
-                setValue: value =>
-                {
-                    Config.Enabled = enabled = value;
-                    ResetDisplays();
-                }
+                setValue: Toggle
             );
-            configMenu.AddKeybind(
+            configMenu.AddKeybindList(
                 mod: ModManifest,
                 name: () => Helper.Translation.Get("Config.ToggleButton.Name"),
                 tooltip: () => Helper.Translation.Get("Config.ToggleButton.Description"),
@@ -118,6 +168,17 @@ namespace MPInfo
             );
             configMenu.AddBoolOption(
                 mod: ModManifest,
+                name: () => Helper.Translation.Get("Config.ShowPlayerIcon.Name"),
+                tooltip: () => Helper.Translation.Get("Config.ShowPlayerIcon.Description"),
+                getValue: () => Config.ShowPlayerIcon,
+                setValue: value =>
+                {
+                    Config.ShowPlayerIcon = value;
+                    ResetDisplays();
+                }
+            );
+            configMenu.AddBoolOption(
+                mod: ModManifest,
                 name: () => Helper.Translation.Get("Config.HideBars.Name"),
                 tooltip: () => "",
                 getValue: () => Config.HideHealthBars,
@@ -131,7 +192,7 @@ namespace MPInfo
                 setValue: value =>
                 {
                     Config.Position = Enum.Parse<Position>(value);
-                    PlayerInfoBox.RedrawAll();
+                    PlayerInfoBox.FixPositions();
                 },
                 allowedValues: Enum.GetNames<Position>()
             );
@@ -143,7 +204,7 @@ namespace MPInfo
                 setValue: value =>
                 {
                     Config.XOffset = value;
-                    PlayerInfoBox.RedrawAll();
+                    PlayerInfoBox.FixPositions();
                 }
             );
             configMenu.AddNumberOption(
@@ -154,7 +215,7 @@ namespace MPInfo
                 setValue: value =>
                 {
                     Config.YOffset = value;
-                    PlayerInfoBox.RedrawAll();
+                    PlayerInfoBox.FixPositions();
                 }
             );
             configMenu.AddNumberOption(
@@ -165,64 +226,103 @@ namespace MPInfo
                 setValue: value =>
                 {
                     Config.SpaceBetween = value;
-                    PlayerInfoBox.RedrawAll();
+                    PlayerInfoBox.FixPositions();
                 }
-             );
+            );
         }
 
-        public void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+        private void onReturnToTitle(object? sender, ReturnedToTitleEventArgs e)
         {
-            if (e.Button == Config.ToggleButton)
-                enabled = !enabled;
+            PingsSinceLastPong.Clear();
+            PlayerData.Clear();
+            TraditionalStaminaReporting.Clear();
         }
 
-        private void OnDayStarted(object? sender, DayStartedEventArgs e)
+        private void onDayStarted(object? sender, DayStartedEventArgs e)
         {
-            infoCache.Value = new(Game1.player);
-            Game1.player.modData[ModManifest.UniqueID] = infoCache.Value.Serialize();
+            foreach (var p in PlayerData.Keys)
+                PlayerData[p] = new(Game1.GetPlayer(p));
+            Ping();
             ResetDisplays();
         }
 
-        private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
+        private void onOneSecondTicked(object? sender, OneSecondUpdateTickedEventArgs e) => Ping();
+
+        private void onButtonPressed(object? sender, ButtonPressedEventArgs e)
         {
-            if (!Context.IsWorldReady)
-                return;
-            if (!infoCache.Value.IsMatch(Game1.player))
-            {
-                infoCache.Value = new(Game1.player);
-                Game1.player.modData[ModManifest.UniqueID] = infoCache.Value.Serialize();
-                ResetDisplays();
-            }
-            if (!Context.IsMainPlayer)
-                return;
-            if (playersOnline.Value != Game1.numberOfPlayers())
-            {
-                playersOnline.Value = Game1.numberOfPlayers();
-                ForceUpdate();
-            }
+            if (Config.ToggleButton.JustPressed())
+                Toggle(!IsEnabled);
         }
 
-        private void OnMultiplayerDataReceived(object? sender, ModMessageReceivedEventArgs e)
+        private void onPlayerJoin(object? sender, PeerConnectedEventArgs e)
         {
-            if (e.FromModID != Helper.ModRegistry.ModID || e.Type != "MPInfo.ForceUpdate")
+            if (Game1.MasterPlayer.UniqueMultiplayerID != Game1.player.UniqueMultiplayerID)
                 return;
-
-            infoCache.Value = new(Game1.player);
-            Game1.player.modData[ModManifest.UniqueID] = infoCache.Value.Serialize();
+            var peers = Helper.Multiplayer.GetConnectedPlayers().Select(x => x.PlayerID).Where(x => x != e.Peer.PlayerID && x != Game1.player.UniqueMultiplayerID).ToArray();
+            Helper.Multiplayer.SendMessage(e.Peer.PlayerID, "MPInfo.Joined", [ModManifest.UniqueID], peers);
+            PingsSinceLastPong[e.Peer.PlayerID] = 0;
+            PlayerData[e.Peer.PlayerID] = null;
+            Ping();
             ResetDisplays();
+        }
 
-            /*var display = (PlayerInfoBox?)Game1.onScreenMenus.FirstOrDefault(x => x is PlayerInfoBox pib && pib.Who.UniqueMultiplayerID == e.FromPlayerID);
-            if (display is null && e.Type != "MPInfo.ForceUpdate")
+        private void onPlayerLeave(object? sender, PeerDisconnectedEventArgs e)
+        {
+            if (Game1.MasterPlayer.UniqueMultiplayerID != Game1.player.UniqueMultiplayerID)
                 return;
+            var peers = Helper.Multiplayer.GetConnectedPlayers().Select(x => x.PlayerID).Where(x => x != e.Peer.PlayerID && x != Game1.player.UniqueMultiplayerID).ToArray();
+            Helper.Multiplayer.SendMessage(e.Peer.PlayerID, "MPInfo.Left", [ModManifest.UniqueID], peers);
+            PingsSinceLastPong.Remove(e.Peer.PlayerID);
+            PlayerData.Remove(e.Peer.PlayerID);
+            TraditionalStaminaReporting.Remove(e.Peer.PlayerID);
+            ResetDisplays();
+        }
 
+        private void onModMessageReceived(object? sender, ModMessageReceivedEventArgs e)
+        {
+            if (e.FromModID != ModManifest.UniqueID || e.FromPlayerID == Game1.player.UniqueMultiplayerID)
+                return;
+            string packet = "";
+            long player = -1;
             switch (e.Type)
             {
-                case "MPInfo.ForceUpdate": //Let updateticked handle the messages
-                    infoCache.Value = new(Game1.player);
-                    Game1.player.modData[ModManifest.UniqueID] = infoCache.Value.Serialize();
+                case "MPInfo.Ping":
+                    packet = e.ReadAs<string>();
+                    PlayerData[e.FromPlayerID] = PlayerInfo.Deserialize(packet);
+                    Pong(e.FromPlayerID);
+                    break;
+                case "MPInfo.Pong":
+                    packet = e.ReadAs<string>();
+                    PlayerData[e.FromPlayerID] = PlayerInfo.Deserialize(packet);
+                    PingsSinceLastPong[e.FromPlayerID] = 0;
+                    break;
+                case "MPInfo.Joined":
+                    player = e.ReadAs<long>();
+                    PingsSinceLastPong[player] = 0;
+                    PlayerData[player] = null;
+                    Ping();
                     ResetDisplays();
                     break;
-            }*/
+                case "MPInfo.Left":
+                    player = e.ReadAs<long>();
+                    PingsSinceLastPong.Remove(player);
+                    PlayerData.Remove(player);
+                    TraditionalStaminaReporting.Remove(player);
+                    ResetDisplays();
+                    break;
+            }
+        }
+
+        private void onAssetRequested(object? sender, AssetRequestedEventArgs e)
+        {
+            if (e.NameWithoutLocale.IsEquivalentTo("MPInfo/Crown"))
+                e.LoadFromModFile<Texture2D>("Assets/Crown.png", AssetLoadPriority.Exclusive);
+        }
+
+        private void onAssetInvalidated(object? sender, AssetsInvalidatedEventArgs e)
+        {
+            if (e.NamesWithoutLocale.Any(x => x.IsEquivalentTo("MPInfo/Crown")))
+                PlayerInfoBox.Crown = Game1.content.Load<Texture2D>("MPInfo/Crown");
         }
     }
 }

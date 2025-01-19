@@ -88,7 +88,12 @@ namespace SoundsPatcher.Utility
                 Game1.changeMusicTrack("none");
             }
 
-            exitFunction = () => { if ((Game1.getMusicTrackName() == "none" || Game1.getMusicTrackName() == SelectedMusicTrack) && !string.IsNullOrWhiteSpace(MusicTrackBeforeTest)) Game1.changeMusicTrack(MusicTrackBeforeTest); if (ActiveCue != null) ActiveCue.Stop(AudioStopOptions.Immediate); };
+            exitFunction = () => 
+            { 
+                if ((Game1.getMusicTrackName() == "none" || Game1.getMusicTrackName() == SelectedMusicTrack) && !string.IsNullOrWhiteSpace(MusicTrackBeforeTest)) 
+                    Game1.changeMusicTrack(MusicTrackBeforeTest); 
+                ActiveCue?.Stop(AudioStopOptions.Immediate); 
+            };
         }
 
         public override void setUpForGamePadMode()

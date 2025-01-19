@@ -1,7 +1,7 @@
 ﻿{
     "Name": "Sounds Patcher",
     "Author": "MindMeltMax",
-    "Version": "2.0.1",
+    "Version": "2.0.4",
     "Description": "Allows you to disable sounds",
     "UniqueID": "MindMeltMax.SoundsPatcher",
     "EntryDll": "Sounds Patcher.dll",

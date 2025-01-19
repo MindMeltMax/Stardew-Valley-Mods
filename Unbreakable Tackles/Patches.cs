@@ -40,12 +40,15 @@ namespace UnbreakableTackles
         {
             try
             {
-                if (!ModEntry.IConfig.consumeBait && __state > 0 && __instance.GetBait() is Object bait && bait.Stack < __state)
+                if (!ModEntry.IConfig.consumeBait && __state > 0 && __instance.GetBait() is Object bait && bait.Stack != __state)
                     __instance.GetBait().Stack = __state;
-                if (__instance.attachments[1] is not null && __instance.attachments[1].uses.Value > 0)
-                    --__instance.attachments[1].uses.Value;
-                if (__instance.attachments.Count > 2 && __instance.attachments[2] is not null && __instance.attachments[2].uses.Value > 0) //For advanced iridium rod tackle 2 index
-                    --__instance.attachments[2].uses.Value;
+                for (int i = 0; i < __instance.attachments.Count; i++)
+                {
+                    var attachment = __instance.attachments[i];
+                    if (attachment is null || attachment.Category != Object.tackleCategory && !attachment.HasContextTag("category_tackle") || attachment.uses.Value <= 0)
+                        continue;
+                    --__instance.attachments[i].uses.Value;
+                }
             }
             catch (Exception ex) 
             { 

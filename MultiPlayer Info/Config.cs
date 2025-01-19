@@ -1,4 +1,5 @@
 ﻿using StardewModdingAPI;
+using StardewModdingAPI.Utilities;
 using System;
 
 namespace MPInfo 
@@ -7,10 +8,11 @@ namespace MPInfo
     {
         public bool Enabled { get; set; } = true;
 
-        public SButton ToggleButton { get; set; } = SButton.F6;
+        public KeybindList ToggleButton { get; set; } = new(SButton.F6);
         public bool ShowSelf { get; set; } = false;
         public bool ShowHostCrown { get; set; } = true;
         public bool HideHealthBars { get; set; } = false;
+        public bool ShowPlayerIcon { get; set; } = true;
         public Position Position { get; set; } = Position.BottomLeft;
         public int XOffset { get; set; } = 0;
         public int YOffset { get; set; } = 0;
@@ -27,6 +29,6 @@ namespace MPInfo
 
         void AddNumberOption(IManifest mod, Func<int> getValue, Action<int> setValue, Func<string> name, Func<string> tooltip = null, int? min = null, int? max = null, int? interval = null, Func<int, string> formatValue = null, string fieldId = null);
 
-        void AddKeybind(IManifest mod, Func<SButton> getValue, Action<SButton> setValue, Func<string> name, Func<string> tooltip = null, string fieldId = null);
+        void AddKeybindList(IManifest mod, Func<KeybindList> getValue, Action<KeybindList> setValue, Func<string> name, Func<string> tooltip = null, string fieldId = null);
     }
 }

@@ -9,6 +9,8 @@
   "Config.ShowSelf.Description": "Whether or not to show a display with your own info",
   "Config.ShowHostCrown.Name": "Show Host Crown",
   "Config.ShowHostCrown.Description": "Show a crown icon on the display of the server host",
+  "Config.ShowPlayerIcon.Name": "Show Player Icon",
+  "Config.ShowPlayerIcon.Description": "Show a mini portrait of the player's head next to the info",
   "Config.HideBars.Name": "Hide Health and Stamina Bars",
   "Config.PositionBoxes.Name": "Position of boxes",
   "Config.PositionBoxes.Description": "The general position on the screen where the boxes should be drawn",

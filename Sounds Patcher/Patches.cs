@@ -31,22 +31,23 @@ namespace SoundsPatcher
             );
         }
 
-        public static bool PlayLocalPrefix(string cueName, GameLocation location, Vector2? position, int? pitch, SoundContext context, out ICue cue, ref bool __result)
+        public static bool PlayLocalPrefix(string cueName, ref bool __result, out ICue cue)
         {
-            cue = null;
             try
             {
+                cue = Game1.soundBank.GetCue(cueName);
                 updateConfigSounds(cueName);
                 return __result = canPlaySound(cueName);
             }
             catch (Exception ex)
             {
+                cue = Game1.soundBank.GetCue("shwip"); //Fail safe to prevent bad cue data
                 handleError(nameof(ISoundsHelper.PlayLocal), cueName, ex);
                 return true;
             }
         }
 
-        public static bool PlayAllPrefix(string cueName, GameLocation location, Vector2? position, int? pitch, SoundContext context)
+        public static bool PlayAllPrefix(string cueName)
         {
             try
             {
@@ -80,7 +81,7 @@ namespace SoundsPatcher
                 ModEntry.IConfig.UnknownSounds.Add(sound, false);
         }
 
-        private static bool canPlaySound(string sound) => !ModEntry.IConfig.Sounds.Any(x => x.Key == sound && x.Value) && !ModEntry.IConfig.Songs.Any(x => x.Key == sound && x.Value);
+        private static bool canPlaySound(string sound) => !ModEntry.IConfig.Sounds.Any(x => x.Key == sound && x.Value) && !ModEntry.IConfig.Songs.Any(x => x.Key == sound && x.Value) && !ModEntry.IConfig.UnknownSounds.Any(x => x.Key == sound && x.Value);
 
         private static void handleError(string source, string cue, Exception ex)
         {

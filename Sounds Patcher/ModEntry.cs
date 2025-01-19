@@ -22,7 +22,7 @@ namespace SoundsPatcher
                 IConfig.Sounds = Utilities.GetSoundsDict();
             if (IConfig.Songs is null || IConfig.Songs.Count <= 0)
                 IConfig.Songs = Utilities.GetSongsDict();
-            IConfig.UnknownSounds ??= new();
+            IConfig.UnknownSounds ??= [];
             IConfig.MenuKeys ??= KeybindList.Parse("O, RightStick");
 
             helper.Events.GameLoop.GameLaunched += (_, _) => Patches.Patch(helper.ModRegistry.ModID);

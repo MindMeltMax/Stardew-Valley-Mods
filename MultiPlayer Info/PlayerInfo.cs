@@ -1,9 +1,5 @@
 ﻿using StardewValley;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace MPInfo
 {
@@ -19,12 +15,12 @@ namespace MPInfo
 
         public PlayerInfo() { }
 
-        public PlayerInfo(Farmer player)
+        public PlayerInfo(Farmer? player)
         {
-            Health = player.health;
-            MaxHealth = player.maxHealth;
-            Stamina = player.Stamina;
-            MaxStamina = player.MaxStamina;
+            Health = player?.health ?? 100;
+            MaxHealth = player?.maxHealth ?? 100;
+            Stamina = player?.Stamina ?? 270;
+            MaxStamina = player?.MaxStamina ?? 270;
         }
 
         //Using this instead of $"{Health}|{MaxHealth}|{Stamina}|{MaxStamina}"; takes 18 less il instructions... WTF c#?
