@@ -1,7 +1,7 @@
 ﻿{
   "Name": "MultiPlayer Info",
   "Author": "MindMeltMax",
-  "Version": "1.2.0",
+  "Version": "1.2.1",
   "Description": "Display some info about your farmer friends",
   "UniqueID": "MindMeltMax.MPInfo",
   "EntryDll": "MPInfo.dll",
