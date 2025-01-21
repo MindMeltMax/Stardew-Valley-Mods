@@ -1,0 +1,23 @@
+{
+  "PlayerInfoBox.Me": "(玩家自身)",
+  "PlayerInfoBox.Host": "(主持人)",
+
+  "Config.Enabled.Name": "启用",
+  "Config.ToggleButton.Name": "切换按钮",
+  "Config.ToggleButton.Description": "用于切换显示屏的按钮",
+  "Config.ShowSelf.Name": "显示自身",
+  "Config.ShowSelf.Description": "是否显示带有玩家自身信息的显示屏",
+  "Config.ShowHostCrown.Name": "显示主持人官方",
+  "Config.ShowHostCrown.Description": "在服务器主机的显示屏上显示官方图标.",
+  "Config.ShowPlayerIcon.Name": "显示玩家图标",
+  "Config.ShowPlayerIcon.Description": "在信息旁边显示玩家的迷你头像.",
+  "Config.HideBars.Name": "隐藏生命和能量条",
+  "Config.PositionBoxes.Name": "方框的位置",
+  "Config.PositionBoxes.Description": "在屏幕上绘制方框的大致位置.",
+  "Config.XOffset.Name": "X偏移量",
+  "Config.XOffset.Description": "将方框水平偏移.",
+  "Config.YOffset.Name": "Y偏移量",
+  "Config.YOffset.Description": "将方框垂直偏移.",
+  "Config.SpaceBetween.Name": "方框间隔",
+  "Config.SpaceBetween.Description": "方框之间的距离."
+}
