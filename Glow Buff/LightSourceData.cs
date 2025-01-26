@@ -1,24 +1,22 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using StardewValley;
 
 namespace GlowBuff
 {
     public record LightSourceData
     {
-        public int TextureId { get; set; }
+        public int TextureId { get; set; } = 4;
 
-        public int Radius { get; set; }
+        public float Radius { get; set; } = 1f;
 
-        public Color Color { get; set; }
+        public Color Color { get; set; } = new(0, 50, 170);
 
-        public int Duration { get; set; }
+        public int Duration { get; set; } = Buff.ENDLESS;
 
-        public bool PrismaticColor { get; set; }
+        public bool Prismatic { get; set; } = false;
 
-        public string Source { get; set; }
+        public string DisplayName { get; set; } = ModEntry.Instance.Helper.Translation.Get("Buff.DefaultName");
+
+        public string Description { get; set; } = ModEntry.Instance.Helper.Translation.Get("Buff.DefaultDescription");
     }
 }

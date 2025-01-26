@@ -20,11 +20,11 @@ You don't need an extra content pack, everything can be added directly via C# or
 
 Glow buff is currently only applicable to food/drink items.
 
-Before adding this buff, please read the [notes](#notes) section as it goes over some known incompatibilities and issues.
+Before adding this buff, please read the [notes](#notes) section as it goes over known incompatibilities (if any) and some other usefull information.
 
 ### Basics
 
-The buff is added directly to the list of buffs for any food/drink item.
+The buff is added directly to the list of buffs for any food/drink item, either as it's own standalone buff, or through `CustomFields` on an existing buff.
 
 Here are some quick examples of the basic setup for adding the buff to an existing item with c# and content patcher:
 
@@ -34,6 +34,7 @@ private void onAssetRequested(object? sender, AssetRequestedEventArgs e)
 {
 	if (e.NameWithoutLocale.IsEquivalentTo("Data\\Objects"))
 	{
+		//Option A: The item doesn't already have buffs
 		e.Edit(asset => 
 		{
 			var data = asset.AsDictionary<string, ObjectData>().Data;
@@ -41,11 +42,22 @@ private void onAssetRequested(object? sender, AssetRequestedEventArgs e)
 			data["{{Your_ItemId}}"].Buffs.Add(new()
 			{
 				Duration = 120, //The duration of the buff in game minutes
-				BuffId = "MindMeltMax.GlowBuff.Glow", //Must be this exact Id to load the correct buff
+				BuffId = "MindMeltMax.GlowBuff/Glow", //Must be this exact Id to load the correct buff
 				CustomFields = new()
 				{
 					//Add the properties for the buff, will be explained in Fields
 				}
+			});
+		});
+
+		//Option B: The item already has buffs
+		e.Edit(asset => 
+		{
+			var data = asset.AsDictionary<string, ObjectData>().Data;
+			data["{{Your_ItemId}}"].Buffs[0].CustomFields ??= []; //Make sure CustomFields exists
+			data["{{Your_ItemId}}"].Buffs[0].CustomFields.TryAddMany(new() 
+			{
+				//Add the properties for the buff
 			});
 		});
 	}
@@ -57,6 +69,7 @@ private void onAssetRequested(object? sender, AssetRequestedEventArgs e)
 {
   	"Format": "2.2.0",
   	"Changes": [
+		//Option A: The item doesn't already have buffs
     	{
       		"Action": "EditData",
       		"Target": "Data/Objects",
@@ -66,7 +79,7 @@ private void onAssetRequested(object? sender, AssetRequestedEventArgs e)
       		"Entries": {
 				"Buffs": [
 					{
-						"BuffId": "MindMeltMax.GlowBuff.Glow", //Must be this exact Id to load the correct buff
+						"BuffId": "MindMeltMax.GlowBuff/Glow", //Must be this exact Id to load the correct buff
 						"Duration": 120, //The duration of the buff in game minutes
 						"CustomFields": {
 							//Add the properties for the buff, will be explained in Fields
@@ -74,16 +87,26 @@ private void onAssetRequested(object? sender, AssetRequestedEventArgs e)
 					}
 				]
       		}
-    	}
+    	},
+		//Option B: The item already has buffs
+		{
+			"Action": "EditData",
+			"Target": "Data/Objects",
+			"TargetField": [
+				"{{Your_ItemId}}",
+				"CustomFields"
+			],
+			"Entries": {
+				//Add the properties for the buff
+			}
+		}
   	]
 }
 ```
 
-Adding them to new objects works about the same, just add the Buffs field to your object data along with the fields specified above.
-
 ### Fields
 
-All customization for the glow effect is added through the ``"CustomFields"`` property of an objects/buffs data.
+All customization for the glow effect is added through the `"CustomFields"` property of an objects/buffs data.
 
 Every field key must start with **"MindMeltMax.GlowBuff/"**, this is to ensure compatibility with other mods.
 
@@ -91,26 +114,20 @@ By default the following fields are supported:
 
 | Key | Description |
 | --- | ----------- |
-| Glow | (Only for fields added to ObjectData) Tells the mod to load the glow buff even if it's not added to an objects list of buffs. |
-| GlowTexture | The id of the texture to load. A list of recognized values can be found [here](#textures). |
-| GlowRadius | The radius of the glow effect. |
-| GlowColor | The rgba color value of the glow effect. (please see [notes](#colors) before using) |
-| GlowDuration | The duration in game minutes of the buff. When added to a buff's custom fields, will be overriden when the buffs duration is not default (-2). When ommited from ObjectData, will default to lasting the rest of the day |
-| DisplayName | The translated name of the buff as it will appear in the objects buff list when hovered (if the buff is added to the objects buffs), and the name of the buff in the buffs display. |
-| Description | The translated description of the buff as it will appear in the buffs display. |
+| `Glow` | Tells the mod to add the glow buff effect, this can be ommited when the buff's id is `"MindMeltMax.GlowBuff/Glow"` |
+| `GlowTexture` / `Texture` | The id of the texture to load. A list of recognized values can be found [here](#textures). |
+| `GlowRadius` / `Radius` | The radius of the glow effect. (Decimal values allowed) |
+| `GlowColor` / `Color` | The rgba color value of the glow effect. (please see [notes](#colors) before using) |
+| ~~`GlowDuration`~~ | **Removed in 2.0.0+** The duration in game minutes of the buff. When added to a buff's custom fields, will be overriden when the buffs duration is not default (-2). When ommited from ObjectData, will default to lasting the rest of the day |
+| `DisplayName` | The translated name of the buff as it will appear in the objects buff list when hovered (if the buff is added to the objects buffs), and the name of the buff in the buffs display. |
+| `Description` | The translated description of the buff as it will appear in the buffs display. |
+| `HoverText` | The text to display in an item's hover box, by default this would be "+{{radius}} {{DisplayName}}" |
 
 ## Notes
 
-The duration of the buff does not need to match that off the other applied buffs. If the duration of applied buffs do not match, the mod will show the duration of the glow buff after that of other buffs, separated by a comma.
-
 ### Compatibility
 
-Due to a current compatibility issue with spacecore, if an item has multiple buffs and one doesn't have custom fields, it will crash when hovered.
-
-While a fix for this has been submitted, there's already a few things you can do to avoid this issue:
-
-* Make sure all custom fields for the objects buffs have a value, this can be empty, as long as it's not ``null``.
-* Add the custom fields to the object directly instead of to the buffs custom fields.
+No known incompatibilities as of yet
 
 ### Textures
 
@@ -118,10 +135,10 @@ The game has a few different texture types for light sources, they are as follow
 
 | Id | Type |
 | -- | ---- |
-| 1 | (Default) the texture used by lanterns and glow rings |
+| 1 | the texture used by lanterns and glow rings |
 | 2 | The texture used by televisions |
 | 3 | Unused |
-| 4 | The texture used by most light giving objects, fireflies, and junimo's in events |
+| 4 | (Default) The texture used by most light giving objects, fireflies, and junimo's in events (Recommended when using colored lights) |
 | 5 | The texture used by regular ghosts |
 | 6 | The texture used by the games default light points |
 | 7 | The texture given of by the movie theater projector |
@@ -133,9 +150,11 @@ The game has a few different texture types for light sources, they are as follow
 
 Due to how lighting colors are handled by the game, some colors show better than others. Keep this in mind when changing color values.
 
-The format for colors can be either:
+The format for colors can be something as follows:
 
 * **"{{red}},{{green}},{{blue}}"**
 * **"{{red}},{{green}},{{blue}},{{alpha}}"**
+
+Additionally, a list of pre-defined color names can be used (Like "Red", "Blue", etc.). A full list of available pre-defined colors can be found [here](https://docs.monogame.net/api/Microsoft.Xna.Framework.Color.html#properties) but if you prefer a visual, I recommend [this overview](https://gpoamusements.itch.io/monogame-colour-palette) by [Fergus Buckner](https://gpoamusements.itch.io/)
 
 ~~But who's to say another value isn't possible~~
