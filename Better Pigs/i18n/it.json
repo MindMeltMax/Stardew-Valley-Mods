@@ -1,0 +1,14 @@
+{
+    "Config.AnimalsStayInside.Name": "Animali rimangono dentro",
+    "Config.AnimalsStayInside.Description": "Animali rimarranno all'interno indipendentemente dal tempo o dalle condizioni della stagione",
+    "Config.AnimalsGoOutsideBadWeather.Name": "Animali escono durante il maltempo",
+    "Config.AnimalsGoOutsideBadWeather.Description": "Animali escono durante la pioggia o l'inverno, ma non durante il tempo più estremo",
+    "Config.AnimalsGoOutsideHorribleWeather.Name": "Animali escono durante tutte le stagioni",
+    "Config.AnimalsGoOutsideHorribleWeather.Description": "Animali escono indipendentemente dal tempo o dalle condizioni della stagione",
+    "Config.DelayedPet.Name": "Accarezzamento ritardato",
+    "Config.DelayedPet.Description": "Se disabilitare o meno l'accarezzamento se l'animale sta eseguendo un'animazione (in modo da non annullare i maiali che scavano tartufi)",
+    "Config.NoTruffleLimit.Name": "Nessun limite al tartufo",
+    "Config.NoTruffleLimit.Description": "Se disabilitare o meno il limite per scavare i tartufi",
+    "Config.PigAnimalCrackerMultiplier.Name": "Moltiplicatore di cracker per maiali",
+    "Config.PigAnimalCrackerMultiplier.Description": "Il moltiplicatore per la possibilità che i maiali scavino i tartufi"
+  }

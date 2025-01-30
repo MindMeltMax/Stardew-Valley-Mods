@@ -1,7 +1,7 @@
 ﻿{
   "Name": "Better Pigs",
   "Author": "MindMeltMax",
-  "Version": "2.0.3",
+  "Version": "2.0.4",
   "Description": "Adds a bunch of small gameplay improvements for pigs (and other animals)",
   "UniqueID": "MindMeltMax.WinterPigs",
   "EntryDll": "Better Pigs.dll",
