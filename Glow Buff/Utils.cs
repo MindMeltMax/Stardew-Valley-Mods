@@ -13,7 +13,7 @@ namespace GlowBuff
         private static ModEntry context => ModEntry.Instance;
         private static string ModId => context.ModManifest.UniqueID;
 
-        public static LightSourceData? TryGetBuffFromItem(Item? item)
+        public static LightSourceData? TryGetLightDataFromItem(Item? item)
         {
             if (!HasBuffs(item, out var data))
                 return null;
@@ -48,6 +48,37 @@ namespace GlowBuff
                 if (result.Duration != -2)
                     result.Duration *= Game1.realMilliSecondsPerGameMinute;
             }
+
+            return result;
+        }
+
+        public static LightSourceData? TryGetLightDataFromBuff(Buff buff)
+        {
+            if (!IsGlowBuff(buff) || buff.customFields is null)
+                return null;
+
+            LightSourceData result = new();
+
+            if (DataIds.HasAOrB(buff.customFields.Keys, DataIds.Texture, DataIds.TextureAlt, out string? textureKey) && int.TryParse(buff.customFields[textureKey], out int textureId))
+                result.TextureId = textureId;
+            if (DataIds.HasAOrB(buff.customFields.Keys, DataIds.Radius, DataIds.RadiusAlt, out string? radiusKey) && float.TryParse(buff.customFields[radiusKey], out float radius))
+                result.Radius = radius;
+            if (DataIds.HasAOrB(buff.customFields.Keys, DataIds.Color, DataIds.ColorAlt, out string? colorKey))
+            {
+                if (buff.customFields[colorKey].Equals("prismatic", StringComparison.OrdinalIgnoreCase))
+                    result.Prismatic = true;
+                else
+                {
+                    Color c = ColorParser.Read(buff.customFields[colorKey]);
+                    result.Color = new(c.R ^ 255, c.G ^ 255, c.B ^ 255, c.A);
+                }
+            }
+            if (buff.customFields.TryGetValue(DataIds.DisplayName, out string? displayName))
+                result.DisplayName = TokenParser.ParseText(displayName);
+            if (buff.customFields.TryGetValue(DataIds.Description, out string? description))
+                result.Description = TokenParser.ParseText(description);
+
+            result.Duration = buff.millisecondsDuration;
 
             return result;
         }
@@ -116,6 +147,8 @@ namespace GlowBuff
         }
 
         private static bool IsGlowBuff(ObjectBuffData buff) => buff is not null && (buff.BuffId == ModId + "/Glow" || (buff.CustomFields?.ContainsKey(ModId + "/Glow") ?? false));
+
+        internal static bool IsGlowBuff(Buff buff) => buff is not null && (buff.id == ModId + "/Glow" || (buff.customFields?.ContainsKey(ModId + "/Glow") ?? false));
 
         private static string GetHoverText(ObjectBuffData buff)
         {

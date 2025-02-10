@@ -3,11 +3,13 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 using StardewValley.Buffs;
+using StardewValley.Extensions;
 using StardewValley.Menus;
 using StardewValley.TokenizableStrings;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
+using SObject = StardewValley.Object;
 
 namespace GlowBuff
 {
@@ -23,11 +25,6 @@ namespace GlowBuff
             Harmony harmony = new(id);
 
             harmony.Patch(
-                original: AccessTools.Method(typeof(Farmer), nameof(Farmer.doneEating)),
-                postfix: new(typeof(Patches), nameof(Farmer_DoneEating_Postfix))
-            );
-
-            harmony.Patch(
                 original: AccessTools.PropertySetter(typeof(Character), nameof(Character.currentLocation)),
                 prefix: new(typeof(Patches), nameof(Farmer_CurrentLocation_Prefix)),
                 postfix: new(typeof(Patches), nameof(Farmer_CurrentLocation_Postfix))
@@ -37,6 +34,18 @@ namespace GlowBuff
                 original: AccessTools.Method(typeof(Farmer), nameof(Farmer.Update)),
                 postfix: new(typeof(Patches), nameof(Farmer_Update_Postfix))
             );
+
+            // --Bandaid fix for SpaceCore compat-- \\
+            // I hate this with a passion, but it works, so I'll keep it around for now ¯\_(ツ)_/¯
+            harmony.Patch(
+                original: AccessTools.Method(typeof(SObject), nameof(SObject.GetFoodOrDrinkBuffs)),
+                postfix: new(AccessTools.Method(typeof(Patches), nameof(Object_GetFoodOrDrinkBuffs_Postfix_Pre_SpaceCore)), priority: Priority.VeryHigh)
+            );
+            harmony.Patch(
+                original: AccessTools.Method(typeof(SObject), nameof(SObject.GetFoodOrDrinkBuffs)),
+                postfix: new(AccessTools.Method(typeof(Patches), nameof(Object_GetFoodOrDrinkBuffs_Postfix_Post_SpaceCore)), priority: Priority.VeryLow)
+            );
+            // --Bandaid fix for SpaceCore compat-- \\
 
             harmony.Patch(
                 original: AccessTools.Method(typeof(BuffManager), nameof(BuffManager.Update)),
@@ -52,7 +61,6 @@ namespace GlowBuff
                 original: AccessTools.FirstMethod(typeof(IClickableMenu), x => x.Name == nameof(IClickableMenu.drawHoverText) && x.GetParameters().Any(y => y.ParameterType == typeof(StringBuilder))), //This is still a bad way of obtaining the method, but I'm not writing out >20 param types
                 transpiler: new(typeof(Patches), nameof(IClickableMenu_DrawHoverText_Transpiler))
             );
-
             buffManagerPlayer = typeof(BuffManager).GetField("Player", BindingFlags.Instance | BindingFlags.NonPublic);
             
             //While I have since removed the code which required their help the most, I still want to include thanks to these people for helping push out the original version of the mod:
@@ -65,22 +73,25 @@ namespace GlowBuff
             //Without them, I probably wouldn't have ever shipped this mod to begin with. While it still might be a mess, it's a mess which I worked hard on, and I don't regret a single second spend on it.
         }
 
-        private static void Farmer_DoneEating_Postfix(Farmer __instance)
+        // --Bandaid fix for SpaceCore compat-- \\
+        private static IEnumerable<Buff> Object_GetFoodOrDrinkBuffs_Postfix_Pre_SpaceCore(IEnumerable<Buff> values, SObject __instance, ref Buff __state)
         {
-            Item eaten = __instance.itemToEat;
-            if (eaten is null || !Game1.objectData.TryGetValue(eaten.ItemId, out var itemData))
-                return;
-
-            var data = Utils.TryGetBuffFromItem(eaten);
-            if (data is null)
-                return;
-
-            if (cache.FarmerToLightSourceId.TryGetValue(__instance.UniqueMultiplayerID, out var id))
-                cache.RemoveLightSource(__instance, id);
-
-            string lightSourceId = context.ModManifest.UniqueID + __instance.UniqueMultiplayerID.ToString();
-            cache.CreateOrUpdateLightSource(__instance, lightSourceId, data);
+            if (__state is null || !context.Helper.ModRegistry.IsLoaded("spacechase0.SpaceCore"))
+                foreach (var buff in values)
+                    if (Utils.IsGlowBuff(buff))
+                        __state = buff;
+            return values;
         }
+
+        private static IEnumerable<Buff> Object_GetFoodOrDrinkBuffs_Postfix_Post_SpaceCore(IEnumerable<Buff> values, SObject __instance, ref Buff __state)
+        {
+            if (__state is null || values.Any(x => x.id == context.ModManifest.UniqueID + "/Glow" || x.customFields.ContainsKey(context.ModManifest.UniqueID + "/Glow")))
+                return values;
+            List<Buff> buffs = [.. values];
+            buffs.Add(__state);
+            return buffs;
+        }
+        // --Bandaid fix for SpaceCore compat-- \\
 
         private static void Farmer_CurrentLocation_Prefix(Character __instance, ref GameLocation __state) => __state = __instance.currentLocation;
 
@@ -114,6 +125,22 @@ namespace GlowBuff
 
         private static void BuffManager_Apply_Postfix(BuffManager __instance, Buff buff)
         {
+            if (buff.id == context.ModManifest.UniqueID + "/Glow")
+            {
+                LightSourceData? data = Utils.TryGetLightDataFromBuff(buff);
+                if (data is null)
+                    return;
+
+                if (buffManagerPlayer?.GetValue(__instance) is not Farmer owner)
+                    owner = Game1.player;
+
+                if (cache.FarmerToLightSourceId.TryGetValue(owner.UniqueMultiplayerID, out var id))
+                    cache.RemoveLightSource(owner, id);
+
+                string lightSourceId = context.ModManifest.UniqueID + owner.UniqueMultiplayerID.ToString();
+                cache.CreateOrUpdateLightSource(owner, lightSourceId, data);
+                return;
+            }
             if (buff.id == context.ModManifest.UniqueID + "/Glow" || !buff.customFields.ContainsKey(context.ModManifest.UniqueID + "/Glow"))
                 return;
             if (buff.customFields.TryGetValue(DataIds.DisplayName, out string? displayName)) 
@@ -121,6 +148,7 @@ namespace GlowBuff
             if (buff.customFields.TryGetValue(DataIds.Description, out string? description)) 
                 description = TokenParser.ParseText(description);
             Buff glowBuff = new(context.ModManifest.UniqueID + "/Glow", buff.source, buff.displaySource, buff.millisecondsDuration, displayName: displayName, description: description);
+            glowBuff.customFields.TryAddMany(buff.customFields);
             __instance.Apply(glowBuff);
         }
 

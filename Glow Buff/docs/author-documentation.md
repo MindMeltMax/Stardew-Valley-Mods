@@ -18,7 +18,7 @@ The mod is designed to be easy to integrate following the basic buff format as m
 
 You don't need an extra content pack, everything can be added directly via C# or Content Patcher.
 
-Glow buff is currently only applicable to food/drink items.
+Glow buff is intended to be used as a regular food buff, but should work fine with frameworks that add buffs in other ways, or code which adds the buff directly. As long as the required `CustomFields` are given.
 
 Before adding this buff, please read the [notes](#notes) section as it goes over known incompatibilities (if any) and some other usefull information.
 
@@ -123,11 +123,14 @@ By default the following fields are supported:
 | `Description` | The translated description of the buff as it will appear in the buffs display. |
 | `HoverText` | The text to display in an item's hover box, by default this would be "+{{radius}} {{DisplayName}}" |
 
+(Keys containing a slash can use either of the provided values)
+
 ## Notes
 
 ### Compatibility
 
-No known incompatibilities as of yet
+**2.1.0:** No known incompatibilities as of yet  
+**2.0.0:** Incompatible with SpaceCore due to issue's with custom fields loading
 
 ### Textures
 
