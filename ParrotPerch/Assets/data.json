@@ -1,0 +1,8 @@
+{
+  "Object": {
+    "Name": "MindMeltMax.ParrotPerch/Perch",
+    "Texture": "Maps\\townInterior",
+    "SpriteIndex": 1085
+  },
+  "Recipe": "335 3 444 1/Field/MindMeltMax.ParrotPerch.Perch/true/none/{0}"
+}

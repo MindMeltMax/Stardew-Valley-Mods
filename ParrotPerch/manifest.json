@@ -1,0 +1,10 @@
+{
+  "Name": "Parrot Perch",
+  "Author": "MindMeltMax",
+  "Version": "1.0.0",
+  "Description": "Adds a simple place for your parrot friend to sit",
+  "UniqueID": "MindMeltMax.ParrotPerch",
+  "EntryDll": "ParrotPerch.dll",
+  "MinimumApiVersion": "4.1.0",
+  "UpdateKeys": [ "nexus:31736" ]
+}
