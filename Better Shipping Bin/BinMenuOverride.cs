@@ -67,11 +67,23 @@ namespace BetterShipping
         {
             this.offset = offset;
             inventory.showGrayedOutSlots = true;
-            HeldItemExitBehavior = ItemExitBehavior.Drop;
+            //HeldItemExitBehavior = ItemExitBehavior.Drop; //Causes issue's with android smapi (Property doesn't exist on android??)
             loadViewComponents();
             RenderItems();
             if (Game1.options.SnappyMenus)
                 setUpForGamePadMode();
+        }
+
+        protected override void cleanupBeforeExit()
+        {
+            rescueHeldItem();
+            base.cleanupBeforeExit();
+        }
+
+        public override void emergencyShutDown()
+        {
+            rescueHeldItem();
+            base.emergencyShutDown();
         }
 
         /// <summary>
@@ -354,7 +366,7 @@ namespace BetterShipping
             SpriteText.drawStringWithScrollCenteredAt(b, text, upperRightCloseButton.bounds.X - (itemsMenu.width / 2), upperRightCloseButton.bounds.Y - 10);
         }
 
-        private void broadCastToMultiplayer() => ModEntry.IHelper.Multiplayer.SendMessage("", "reloadItemsInBin", new[] { ModEntry.IHelper.ModRegistry.ModID });
+        private void broadCastToMultiplayer() => ModEntry.IHelper.Multiplayer.SendMessage("", "reloadItemsInBin", [ModEntry.IHelper.ModRegistry.ModID]);
 
         #region Component Handling
         /// <summary>
@@ -668,7 +680,6 @@ namespace BetterShipping
         /// <returns>The items past the current offset in the shipping bin's item list</returns>
         private List<Item> getItemsInView(int offset)
         {
-            
             farm.getShippingBin(Game1.player).RemoveEmptySlots();
             return new(actuallItems.Skip(maxItemsPerPage / 3 * offset).Take(maxItemsPerPage));
         }
@@ -829,6 +840,19 @@ namespace BetterShipping
         /// </summary>
         /// <returns>The stack size to take</returns>
         private int getStack() => isCtrl ? 25 : (isShift ? 5 : 1);
+
+        /// <summary>
+        /// Re-implement MenuWithInventory.DropHeldItem for this specific use case because I'm not waiting for another android error
+        /// </summary>
+        private void rescueHeldItem()
+        {
+            if (heldItem is null)
+                return;
+            Game1.playSound("throwDownITem");
+            Game1.createItemDebris(heldItem, Game1.player.getStandingPosition(), Game1.player.FacingDirection);
+            inventory.onAddItem?.Invoke(heldItem, Game1.player);
+            heldItem = null;
+        }
         #endregion
     }
 }
