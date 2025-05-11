@@ -293,7 +293,7 @@ namespace MPInfo
                         b.DrawString(Game1.smallFont, $"{info.Health}/{info.MaxHealth}", new(xPositionOnScreen - PlayerInfoAreaSize + 20 + 4 + 64, yPositionOnScreen + 4 + 20), healthColor, 0f, Vector2.Zero, 1f, SpriteEffects.None, .89f);
 
                     b.Draw(texture, new(xPositionOnScreen - PlayerInfoAreaSize + 4 + 64, yPositionOnScreen + 4 + 50), sourceRectIconEnergy, Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, .89f);
-                    b.DrawString(Game1.smallFont, $"{info.Stamina}/{info.MaxStamina}", new(xPositionOnScreen - PlayerInfoAreaSize + 20 + 4 + 64, yPositionOnScreen + 4 + 44), staminaColor, 0f, Vector2.Zero, 1f, SpriteEffects.None, .89f);
+                    b.DrawString(Game1.smallFont, $"{Math.Round{info.Stamina}}/{info.MaxStamina}", new(xPositionOnScreen - PlayerInfoAreaSize + 20 + 4 + 64, yPositionOnScreen + 4 + 44), staminaColor, 0f, Vector2.Zero, 1f, SpriteEffects.None, .89f);
                     return;
             }
         }
