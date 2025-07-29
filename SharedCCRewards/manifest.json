@@ -1,0 +1,10 @@
+{
+  "Name": "Shared Community Center Rewards",
+  "Author": "MindMeltMax",
+  "Version": "1.0.0",
+  "Description": "The junimos will mail to every player who didn't claim the reward, so everyone may share in the bounty of the forest junimos",
+  "UniqueID": "MindMeltMax.SharedCCRewards",
+  "EntryDll": "SharedCCRewards.dll",
+  "MinimumApiVersion": "4.1.0",
+  "UpdateKeys": [ "nexus:X" ]
+}
