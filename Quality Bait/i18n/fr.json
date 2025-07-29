@@ -1,0 +1,24 @@
+﻿{
+  "Bait.1": "Appât (Argent)",
+  "Bait.2": "Appât (Or)",
+  "Bait.3": "Appât (Iridium)",
+  "Wild.1": "Appât Sauvage (Argent)",
+  "Wild.2": "Appât Sauvage (Or)",
+  "Wild.3": "Appât Sauvage (Iridium)",
+  "Magic.1": "Appât Magique (Argent)",
+  "Magic.2": "Appât Magique (Or)",
+  "Magic.3": "Appât Magique (Iridium)",
+  "Deluxe.1": "Appât de Luxe (Argent)",
+  "Deluxe.2": "Appât de Luxe (Or)",
+  "Deluxe.3": "Appât de Luxe (Iridium)",
+  "Challenge.1": "Appât de Luxe (Argent)",
+  "Challenge.2": "Appât de Luxe (Or)",
+  "Challenge.3": "Appât de Luxe (Iridium)",
+
+  "Config.ChancePercentage.Title": "Pourcentage de Chance",
+  "Config.ChancePercentage.Description": "Détermine la probabilité que le poisson attrapé corresponde à la qualité de l'appât (0 : jamais, 100 : toujours). Ne fonctionne pas pour les déchets ou les mauvaises herbes",
+  "Config.BaitMakerQuality.Title": "Qualité de l'Appât du Fabricant",
+  "Config.BaitMakerQuality.Description": "Activer ou désactiver la possibilité que l'appât du fabricant ait une qualité (avec la même chance que pour les prises)",
+  "Config.ForceLowerQuality.Title": "Forcer une Qualité Inférieure",
+  "Config.ForceLowerQuality.Description": "S'assurer que la qualité de l'appât utilisé est inférieure à celle de celui qui est fabriqué"
+}

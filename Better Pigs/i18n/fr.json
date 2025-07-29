@@ -1,0 +1,14 @@
+{
+  "Config.AnimalsStayInside.Name": "Animaux restant à l'intérieur",
+  "Config.AnimalsStayInside.Description": "Animaux qui resteront à l'intérieur, quelles que soient les conditions météorologiques ou saisonnières",
+  "Config.AnimalsGoOutsideBadWeather.Name": "Animaux sortant par mauvais temps",
+  "Config.AnimalsGoOutsideBadWeather.Description": "Animaux qui sortiront sous la pluie ou en hiver, mais pas par des conditions météorologiques extrêmes",
+  "Config.AnimalsGoOutsideHorribleWeather.Name": "Animaux sortant par tous les temps",
+  "Config.AnimalsGoOutsideHorribleWeather.Description": "Animaux qui sortiront quelles que soient les conditions météorologiques ou saisonnières",
+  "Config.DelayedPet.Name": "Caresse retardée",
+  "Config.DelayedPet.Description": "Désactive les caresses si l'animal effectue une animation (pour éviter d'annuler l'action des cochons qui déterrent des truffes)",
+  "Config.NoTruffleLimit.Name": "Pas de limite de truffes",
+  "Config.NoTruffleLimit.Description": "Désactive la limite du nombre de truffes que les cochons peuvent déterrer",
+  "Config.PigAnimalCrackerMultiplier.Name": "Multiplicateur de truffes des cochons",
+  "Config.PigAnimalCrackerMultiplier.Description": "Multiplicateur de chance pour que les cochons déterrent des truffes"
+}
