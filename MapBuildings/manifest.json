@@ -1,7 +1,7 @@
 {
   "Name": "Buildings Included",
   "Author": "MindMeltMax",
-  "Version": "1.1.1",
+  "Version": "1.1.2",
   "Description": "Specify buildings to be placed on a map when loaded",
   "UniqueID": "MindMeltMax.MapBuildings",
   "EntryDll": "MapBuildings.dll",

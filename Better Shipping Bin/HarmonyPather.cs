@@ -41,11 +41,11 @@ namespace BetterShipping
     {
         private static readonly IMonitor Monitor = ModEntry.IMonitor;
 
-        public static void doActionPostfix()
+        public static void doActionPostfix(bool __result)
         {
             try
             {
-                if (Game1.activeClickableMenu is ItemGrabMenu) 
+                if (__result && Game1.activeClickableMenu is ItemGrabMenu) 
                     Game1.activeClickableMenu = new BinMenuOverride();
             }
             catch(Exception ex) { Monitor.Log($"Failed to patch ShippingBin.doAction", LogLevel.Error); Monitor.Log($"{ex.GetType().FullName} - {ex.Message}\n{ex.StackTrace}"); }

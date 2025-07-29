@@ -57,7 +57,22 @@ namespace MapBuildings
         private void onAssetRequested(object? sender, AssetRequestedEventArgs e)
         {
             if (e.NameWithoutLocale.IsEquivalentTo(ModManifest.UniqueID + "/Buildings"))
+            {
                 e.LoadFrom(() => new Dictionary<string, List<MapBuilding>>(), AssetLoadPriority.Exclusive);
+
+                e.Edit(asset =>
+                {
+                    var dict = asset.AsDictionary<string, List<MapBuilding>>().Data;
+                    dict[ModManifest.UniqueID] = [];
+                    dict[ModManifest.UniqueID].Add(new()
+                    {
+                        Building = "Cabin",
+                        X = 58,
+                        Y = 23,
+                        Location = "Farm"
+                    });
+                });
+            }
         }
 
         public void ReloadBuildings()
@@ -212,6 +227,9 @@ namespace MapBuildings
                             }
                         }
 
+                        //Fixes buildings like cabins
+                        current.GetParentLocation().OnBuildingConstructed(current, null);
+
                         if (location.modData.ContainsKey(ModManifest.UniqueID + "/Placed"))
                             location.modData[ModManifest.UniqueID + "/Placed"] += $", {uniqueId}";
                         else
@@ -228,7 +246,7 @@ namespace MapBuildings
                     }
                 }
 
-                Monitor.Log($"Finished loading buildings for {item.Key}. {loaded} buildings were loaded.");
+                Monitor.Log($"Finished loading buildings for {item.Key}. {loaded} / {item.Value.Count} buildings were loaded.");
             }
         }
 

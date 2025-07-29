@@ -1,9 +1,4 @@
 ﻿using StardewValley.GameData.BigCraftables;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ParrotPerch
 {
@@ -12,5 +7,16 @@ namespace ParrotPerch
         public BigCraftableData Object { get; set; }
 
         public string Recipe { get; set; }
+    }
+
+    public record ModData
+    {
+        public int Level { get; set; }
+
+        public int Seed { get; set; }
+
+        public Dictionary<string, string> Data { get; set; }
+
+        public Dictionary<string, string> Metadata { get; set; }
     }
 }

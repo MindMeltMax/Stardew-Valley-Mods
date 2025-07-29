@@ -75,7 +75,7 @@ namespace ChangeFarmCaves
         {
             try
             {
-                if (!isChangingFarmCave)
+                if (!isChangingFarmCave || Game1.currentLocation.lastQuestionKey is null)
                     return true;
                 if (!ModEntry.IConfig.Instant)
                     ModEntry.FarmCave.modData["ChangeFarmCaves.ShouldChange"] = $"{Game1.currentLocation.lastQuestionKey},{__instance.selectedResponse}";
@@ -88,11 +88,11 @@ namespace ChangeFarmCaves
             catch (Exception ex) { ModEntry.IMonitor.Log($"Failed patching {nameof(DialogueBox.receiveLeftClick)}", LogLevel.Error); ModEntry.IMonitor.Log($"{ex.Message}\n{ex.StackTrace}"); return true; }
         }
 
-        public static void answerDialoguePrefix(string questionKey)
+        public static void answerDialoguePrefix(string questionKey, int answerChoice)
         {
             try
             {
-                if (questionKey != "cave")
+                if (questionKey != "cave" || answerChoice < 0)
                     return;
                 ModEntry.FarmCave.Objects.Clear();
             }
@@ -101,7 +101,7 @@ namespace ChangeFarmCaves
 
         public static void answerDialoguePostfix(string questionKey, int answerChoice)
         {
-            if (questionKey != "cave")
+            if (questionKey != "cave" || answerChoice < 0)
                 return;
             if (answerChoice == 0 && !ModEntry.FarmCave.modData.ContainsKey("ChangeFarmCaves.HasGottenDehydrator"))
             {
